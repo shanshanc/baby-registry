@@ -12,13 +12,10 @@ async function claimItem(itemId, claimer) {
     });
     
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to claim item');
+      throw new Error('Failed to claim item');
     }
     
-    const result = await response.json();
-    console.log('Claim successful:', result);
-    return result;
+    return await response.json();
   } catch (error) {
     console.error('Error claiming item:', error);
     alert('Failed to claim item. Please try again.');
@@ -29,11 +26,9 @@ async function loadClaims() {
   try {
     const response = await fetch('/api/claims');
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch claims');
+      throw new Error('Failed to fetch claims');
     }
     const claims = await response.json();
-    console.log('Loaded claims:', claims);
     
     // Update UI with claims
     Object.entries(claims).forEach(([itemId, claimer]) => {

@@ -1,0 +1,26 @@
+{
+  "name": "baby-registry",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {
+    "serve": "^14.2.4",
+    "wrangler": "^4.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "serve public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shanshanc/baby-registry.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/shanshanc/baby-registry/issues"
+  },
+  "homepage": "https://github.com/shanshanc/baby-registry#readme",
+  "description": ""
+}
