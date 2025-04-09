@@ -38,26 +38,64 @@ h1 {
 .item {
   margin: 5px 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  gap: 10px;
 }
 .item input[type="checkbox"] {
   margin-right: 10px;
   accent-color: #f5a7a7;
+  margin-top: 8px;
 }
-.item label {
+.item-details {
   flex: 1;
   min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.item input[type="text"] {
-  margin-left: 10px;
-  padding: 5px;
+.product-name {
+  font-weight: 500;
+  color: #51423B;
+}
+.product-name-zh {
+  font-size: 0.9em;
+  color: #666;
+}
+.price {
+  font-weight: 500;
+  color: #E36C0C;
+}
+.item-image {
+  max-width: 100px;
+  height: auto;
+  border-radius: 4px;
+  margin: 5px 0;
+}
+.item-links {
+  font-size: 0.9em;
+}
+.item-links a {
+  color: #E36C0C;
+  text-decoration: none;
+}
+.item-links a:hover {
+  text-decoration: underline;
+}
+.item input[type="text"],
+.item input[type="email"] {
+  padding: 8px;
   border: 1px solid #ece6e2;
   border-radius: 5px;
   width: 150px;
   font-size: 14px;
+  background-color: white;
 }
-.item input[type="text"]::placeholder {
+.item input[type="text"]::placeholder,
+.item input[type="email"]::placeholder {
   color: #a9a9a9;
 }
 .subcategory {

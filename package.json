@@ -22,5 +22,8 @@
     "url": "https://github.com/shanshanc/baby-registry/issues"
   },
   "homepage": "https://github.com/shanshanc/baby-registry#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1"
+  }
 }
