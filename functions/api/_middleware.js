@@ -1,4 +1,4 @@
-import { corsHeaders, errorResponse } from './utils';
+import { corsHeaders, errorResponse, RateLimiter } from './utils';
 import { handleGetClaims, handlePostClaim } from './claims';
 import { handleGetItems } from './items';
 
@@ -28,6 +28,26 @@ export async function onRequest(context) {
     if (!env.CLAIMS) {
       console.error('[Error] CLAIMS binding not found in env');
       return errorResponse('KV binding not configured', 500);
+    }
+
+    // Check rate limit
+    const rateLimiter = new RateLimiter(env);
+    const clientIP = request.headers.get('cf-connecting-ip') || 'unknown';
+    const isLimited = await rateLimiter.isRateLimited(clientIP, url.pathname);
+    
+    if (isLimited) {
+      return new Response(JSON.stringify({
+        error: 'Rate limit exceeded',
+        code: 429,
+        retryAfter: 300
+      }), {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Retry-After': '300'
+        }
+      });
     }
 
     // Route requests to appropriate handlers

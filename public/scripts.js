@@ -5,7 +5,7 @@ function toggleItems(header) {
 
 async function claimItem(itemId, claimer, email) {
   try {
-    const response = await fetch('/api/claim', {
+    const response = await fetch(CONFIG.api.endpoints.claim, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -17,7 +17,7 @@ async function claimItem(itemId, claimer, email) {
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to claim item');
+      throw new Error(errorData.error || MESSAGES.errors.claim.en);
     }
     
     const result = await response.json();
@@ -25,16 +25,16 @@ async function claimItem(itemId, claimer, email) {
     return result;
   } catch (error) {
     console.error('Error claiming item:', error);
-    alert('Failed to claim item. Please try again.');
+    alert(MESSAGES.errors.claim.en);
   }
 }
 
 async function loadClaims() {
   try {
-    const response = await fetch('/api/claims');
+    const response = await fetch(CONFIG.api.endpoints.claims);
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch claims');
+      throw new Error(errorData.error || MESSAGES.errors.generic.en);
     }
     const claims = await response.json();
     console.log('Loaded claims:', claims);
@@ -66,16 +66,17 @@ async function loadClaims() {
 }
 
 async function loadItemsAndClaims() {
+  const itemsContainer = document.getElementById('items-container');
+  
   try {
-    // Fetch items from API instead of local JSON
-    const itemsResponse = await fetch('/api/items');
+    const itemsResponse = await fetch(CONFIG.api.endpoints.items);
     if (!itemsResponse.ok) {
-      throw new Error('Failed to fetch items');
+      const errorData = await itemsResponse.json();
+      throw new Error(errorData.message || MESSAGES.errors.generic.en);
     }
     const items = await itemsResponse.json();
     
-    const registryDiv = document.getElementById('registry');
-    registryDiv.innerHTML = ''; // Clear existing content
+    itemsContainer.innerHTML = ''; // Clear only the items container
 
     // Group items by category
     const categories = {};
@@ -107,7 +108,7 @@ async function loadItemsAndClaims() {
       });
       
       categoryDiv.appendChild(itemsDiv);
-      registryDiv.appendChild(categoryDiv);
+      itemsContainer.appendChild(categoryDiv);
     });
 
     // Add event listeners to all claim inputs
@@ -124,7 +125,7 @@ async function loadItemsAndClaims() {
           checkbox.checked = true;
           await claimItem(itemId, claimer, email);
         } else if (!email) {
-          alert('Please provide your email address');
+          alert(MESSAGES.errors.emailRequired.en + '\n' + MESSAGES.errors.emailRequired.zh);
         }
       });
     });
@@ -150,11 +151,29 @@ async function loadItemsAndClaims() {
     await loadClaims();
     
     // Periodically refresh claims
-    setInterval(loadClaims, 30000); // Refresh every 30 seconds
+    setInterval(loadClaims, CONFIG.refreshInterval);
     
   } catch (error) {
     console.error('Error loading registry:', error);
-    registryDiv.innerHTML = '<p>Error loading registry. Please refresh the page.</p>';
+    let errorMessage = MESSAGES.errors.generic;
+    
+    try {
+      if (error.message) {
+        const errorData = JSON.parse(error.message);
+        if (errorData.code === 429) {
+          errorMessage = MESSAGES.errors.rateLimit;
+        }
+      }
+    } catch (parseError) {
+      console.error('Error parsing error message:', parseError);
+    }
+    
+    itemsContainer.innerHTML = `
+      <div class="error-message">
+        <p>${errorMessage.en}</p>
+        <p>${errorMessage.zh}</p>
+      </div>
+    `;
   }
 }
 
@@ -170,11 +189,11 @@ function createItemHTML(itemId, itemName, itemUrl, item) {
         </label>
         ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${itemName}" class="item-image">` : ''}
         <div class="item-links">
-          ${itemUrl ? `<a href="${itemUrl}" target="_blank" rel="noopener noreferrer">Product Link</a>` : ''}
+          ${itemUrl ? `<a href="${itemUrl}" target="_blank" rel="noopener noreferrer">${MESSAGES.labels.productLink}</a>` : ''}
         </div>
       </div>
-      <input type="text" class="taken-by" value="" placeholder="Taken by">
-      <input type="email" class="claimer-email" value="" placeholder="Your email">
+      <input type="text" class="taken-by" value="" placeholder="${MESSAGES.placeholders.takenBy}">
+      <input type="email" class="claimer-email" value="" placeholder="${MESSAGES.placeholders.email}">
     </div>
   `;
 }

@@ -47,4 +47,42 @@ export function successResponse(data) {
       status: 200
     }
   );
-} 
+}
+
+export class RateLimiter {
+  constructor(env) {
+    this.kv = env.CLAIMS;
+    // Check if we're in development
+    this.isDev = env.NODE_ENV === 'development' || !env.PROD;
+  }
+
+  async isRateLimited(ip, endpoint) {
+    const now = Date.now();
+    // Minimum window of 60 seconds for dev due to KV TTL limitation
+    const windowSize = this.isDev ? 60 * 1000 : 5 * 60 * 1000; // 60 seconds in dev, 5 minutes in prod
+    const limit = this.isDev 
+      ? (endpoint === '/api/items' ? 2 : 3)  // Very small limits for testing
+      : (endpoint === '/api/items' ? 30 : 50); // Production limits
+    
+    const key = `ratelimit:${ip}:${endpoint}`;
+    const value = await this.kv.get(key);
+    const requests = value ? JSON.parse(value) : [];
+    
+    // Clean old requests
+    const validRequests = requests.filter(timestamp => now - timestamp < windowSize);
+    
+    if (validRequests.length >= limit) {
+      console.log(`[Rate Limit] IP ${ip} exceeded limit for ${endpoint}. Requests: ${validRequests.length}/${limit}`);
+      return true;
+    }
+    
+    // Add current request
+    validRequests.push(now);
+    const ttl = this.isDev ? 60 : 300; // 60 seconds TTL in dev (minimum allowed), 5 minutes in prod
+    await this.kv.put(key, JSON.stringify(validRequests), { expirationTtl: ttl });
+    
+    console.log(`[Rate Limit] IP ${ip} request count for ${endpoint}: ${validRequests.length}/${limit}`);
+    return false;
+  }
+}
+ 
