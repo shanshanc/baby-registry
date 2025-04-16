@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [],
+  "routes": [
+    {
+      "src": "/api/items",
+      "dest": "/api/items.js"
+    },
+    {
+      "src": "/api/claims",
+      "dest": "/api/claims.js"
+    },
+    {
+      "src": "/api/verify",
+      "dest": "/api/verification.js"
+    },
+    {
+      "src": "/api/cleanup",
+      "dest": "/api/cleanup.js"
+    }
+  ]
+} 

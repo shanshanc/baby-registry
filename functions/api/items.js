@@ -1,4 +1,5 @@
-import { maskEmail, generateId, errorResponse, successResponse } from './utils';
+import { errorResponse, successResponse } from './utils';
+import { fetchFromGoogleSheets } from './googleSheets';
 
 export async function handleGetItems(env) {
   try {
@@ -21,154 +22,61 @@ export async function handleGetItems(env) {
 }
 
 async function syncClaimsWithGoogleSheets(items, env) {
+  console.log('[Debug] Starting syncClaimsWithGoogleSheets');
   // Get all current claims
   const claims = await env.CLAIMS.list();
+  console.log('[Debug] Current claims in KV before sync:', claims.keys.map(k => k.name));
   const currentClaimKeys = claims.keys.map(k => k.name);
+  
+  // Create a set of item IDs from Google Sheets for faster lookup
+  const sheetItemIds = new Set(items.map(item => item.id));
+  console.log('[Debug] Items in Google Sheets:', Array.from(sheetItemIds));
   
   // For each item from Google Sheets
   for (const item of items) {
     const itemId = item.id;
+    console.log('[Debug] Processing item:', itemId);
+    
     // If item has claimedBy/email in Google Sheets, update KV
     if (item.claimedBy && item.claimerEmail) {
+      console.log('[Debug] Updating claim for item:', itemId);
       await env.CLAIMS.put(itemId, JSON.stringify({ 
         claimer: item.claimedBy, 
-        email: item.claimerEmail 
+        email: item.claimerEmail,
+        verified: true, // Mark as verified since it's from Google Sheets
+        product: itemId,
+        timestamp: Date.now()
       }));
-    } else {
-      // If item exists in KV but not claimed in Google Sheets, delete it
-      if (currentClaimKeys.includes(itemId)) {
-        await env.CLAIMS.delete(itemId);
-      }
     }
   }
-}
-
-async function fetchFromGoogleSheets(env) {
-  try {
-    const serviceAccount = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_KEY);
-    const accessToken = await getGoogleAccessToken(serviceAccount);
-    
-    // Fetch data from Google Sheets
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${env.GOOGLE_SHEET_ID}/values/${env.GOOGLE_SHEET_RANGE}`;
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('[Error] Failed to fetch data from Google Sheets:', error);
-      throw new Error('Failed to fetch data from Google Sheets: ' + error);
-    }
-
-    const data = await response.json();
-    if (!data.values) {
-      console.error('[Error] No values returned from Google Sheets:', data);
-      throw new Error('No values returned from Google Sheets');
-    }
-    
-    console.log('[Debug] Raw values from Google Sheets:', data.values);
-    return transformSheetDatatoItems(data.values);
-  } catch (error) {
-    console.error('[Error] Error in fetchFromGoogleSheets:', error);
-    throw error;
-  }
-}
-
-async function getGoogleAccessToken(serviceAccount) {
-  // Create JWT header and payload
-  const header = {
-    alg: 'RS256',
-    typ: 'JWT',
-    kid: serviceAccount.private_key_id
-  };
-
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    iss: serviceAccount.client_email,
-    scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now
-  };
-
-  // Base64url encode header and payload
-  const encodedHeader = btoa(JSON.stringify(header))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-  const encodedPayload = btoa(JSON.stringify(payload))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-
-  // Convert PEM to ArrayBuffer
-  const pemHeader = '-----BEGIN PRIVATE KEY-----';
-  const pemFooter = '-----END PRIVATE KEY-----';
-  const pemContents = serviceAccount.private_key
-    .replace(pemHeader, '')
-    .replace(pemFooter, '')
-    .replace(/\n/g, '');
   
-  const binaryDer = atob(pemContents);
-  const binaryDerBuffer = new ArrayBuffer(binaryDer.length);
-  const binaryDerArray = new Uint8Array(binaryDerBuffer);
-  for (let i = 0; i < binaryDer.length; i++) {
-    binaryDerArray[i] = binaryDer.charCodeAt(i);
+  // Only delete claims for items that no longer exist in Google Sheets
+  // and are not recently claimed (within last 24 hours)
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+  
+  for (const key of currentClaimKeys) {
+    if (!sheetItemIds.has(key)) {
+      console.log('[Debug] Checking if claim should be deleted:', key);
+      const claimData = await env.CLAIMS.get(key);
+      try {
+        const claim = JSON.parse(claimData);
+        // Only delete if the claim is older than 24 hours
+        if (now - claim.timestamp > oneDay) {
+          console.log('[Debug] Deleting old claim for item:', key);
+          await env.CLAIMS.delete(key);
+        } else {
+          console.log('[Debug] Keeping recent claim for item:', key);
+        }
+      } catch (e) {
+        console.log('[Debug] Error parsing claim data for item:', key, e);
+        // If we can't parse the claim data, keep it
+        console.log('[Debug] Keeping unparseable claim for item:', key);
+      }
+    }
   }
-
-  // Import key
-  const key = await crypto.subtle.importKey(
-    'pkcs8',
-    binaryDerBuffer,
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256',
-    },
-    false,
-    ['sign']
-  );
-
-  // Sign the JWT
-  const textEncoder = new TextEncoder();
-  const signatureBuffer = await crypto.subtle.sign(
-    { name: 'RSASSA-PKCS1-v1_5' },
-    key,
-    textEncoder.encode(`${encodedHeader}.${encodedPayload}`)
-  );
-
-  // Convert signature to base64url
-  const signatureArray = new Uint8Array(signatureBuffer);
-  const signatureBase64 = btoa(String.fromCharCode(...signatureArray));
-  const encodedSignature = signatureBase64
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-
-  // Combine to create JWT
-  const jwt = `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
-
-  // Get access token
-  const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: jwt,
-    }),
-  });
-
-  if (!tokenResponse.ok) {
-    const error = await tokenResponse.text();
-    console.error('[Error] Failed to get access token:', error);
-    throw new Error('Failed to get access token: ' + error);
-  }
-
-  const { access_token } = await tokenResponse.json();
-  return access_token;
+  
+  console.log('[Debug] Sync completed');
 }
 
 function transformSheetDatatoItems(values) {

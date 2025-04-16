@@ -51,7 +51,7 @@ export function successResponse(data) {
 
 export class RateLimiter {
   constructor(env) {
-    this.kv = env.CLAIMS;
+    this.kv = env.RATE_LIMIT; // Use separate KV namespace for rate limiting
     // Check if we're in development
     this.isDev = env.NODE_ENV === 'development' || !env.PROD;
   }
@@ -61,7 +61,7 @@ export class RateLimiter {
     // Minimum window of 60 seconds for dev due to KV TTL limitation
     const windowSize = this.isDev ? 60 * 1000 : 5 * 60 * 1000; // 60 seconds in dev, 5 minutes in prod
     const limit = this.isDev 
-      ? (endpoint === '/api/items' ? 2 : 3)  // Very small limits for testing
+      ? (endpoint === '/api/items' ? 20 : 30)  // Smaller limits for testing
       : (endpoint === '/api/items' ? 30 : 50); // Production limits
     
     const key = `ratelimit:${ip}:${endpoint}`;
