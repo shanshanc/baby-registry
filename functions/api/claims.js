@@ -3,10 +3,7 @@ import { handleCreateVerification } from './verificationHandler';
 
 export async function handleGetClaims(env) {
   try {
-    console.log('[Debug] Starting handleGetClaims');
-    console.log('[Debug] Fetching all claims');
     const claims = await env.CLAIMS.list();
-    console.log('[Debug] Raw claims list:', claims.keys.map(k => k.name));
     
     const result = {};
     
@@ -24,7 +21,6 @@ export async function handleGetClaims(env) {
       try {
         // Try to parse as JSON for new claim format
         const claim = JSON.parse(value);
-        console.log('[Debug] Parsed claim for key', key.name, ':', claim);
         result[key.name] = {
           claimer: claim.claimer,
           email: maskEmail(claim.email),
@@ -45,7 +41,6 @@ export async function handleGetClaims(env) {
       }
     }
     
-    console.log('[Debug] Final claims result:', result);
     return successResponse(result);
   } catch (error) {
     console.error('[Error] Error fetching claims:', error);
@@ -56,11 +51,9 @@ export async function handleGetClaims(env) {
 export async function handlePostClaim(request, env) {
   try {
     const body = await request.json();
-    console.log('[Debug] Claim request body:', body);
     
     const { item, claimer, email } = body;
     if (!item || !claimer || !email) {
-      console.log('[Error] Missing required fields:', { item, claimer, email });
       return errorResponse('Missing required fields: item, claimer, and email', 400);
     }
     
@@ -73,17 +66,13 @@ export async function handlePostClaim(request, env) {
       timestamp: Date.now()
     };
     
-    console.log('[Debug] Attempting to store claim:', claimData);
     const claimJson = JSON.stringify(claimData);
-    console.log('[Debug] Storing claim JSON:', claimJson);
     
     // Verify the claim was stored correctly
     await env.CLAIMS.put(item, claimJson);
     const storedValue = await env.CLAIMS.get(item);
-    console.log('[Debug] Stored claim value:', storedValue);
     
     if (storedValue !== claimJson) {
-      console.error('[Error] Claim was not stored correctly');
       return errorResponse('Failed to store claim', 500);
     }
     
@@ -101,7 +90,6 @@ export async function handlePostClaim(request, env) {
     try {
       // Pass the payload and the env
       const verificationResponse = await handleCreateVerification(verificationPayload, env);
-      console.log('[Debug] Verification response status:', verificationResponse.status);
       
       if (!verificationResponse.ok) {
         const verificationText = await verificationResponse.text();

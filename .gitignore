@@ -1,5 +1,6 @@
 node_modules
 wrangler.toml
+wrangler.sync.toml
 plain-scene-cd26/
 .wrangler/
 backup/
