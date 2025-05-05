@@ -7,14 +7,31 @@
     <link rel="icon" href="img/heart.png">
     <link rel="stylesheet" href="styles.css">
     <script src="constants.js"></script>
-    <script src="scripts.js" defer></script>
+    <script src="scripts.js" type="module" defer></script>
 </head>
 <body>
     <div class="container">
         <h1>Baby Registry</h1>
-        <div id="registry">
-            <div id="items-container"></div>
+        <div class="registry-wrapper">
+          <div class="sidebar" id="sidebar">
+            <div class="controls">
+              <label><input type="checkbox" id="expand-all" name="toggle-all"> Expand All</label>
+              <label><input type="checkbox" id="collapse-all" name="toggle-all"> Collapse All</label>
+            </div>
+            <div class="categories" id="category-container">
+              <div class="category">
+                  <h2 onclick="toggleCategory(this)" class="active">Feeding</h2>
+              </div>
+              <div class="category">
+                  <h2 onclick="toggleCategory(this)">Essentials</h2>
+              </div>
+              <div class="category">
+                  <h2 onclick="toggleCategory(this)">Travel</h2>
+              </div>
+            </div>
+          </div>
+          <div class="content" id="items-container"></div>
         </div>
-    </div>    
+    </div> 
 </body>
 </html>
