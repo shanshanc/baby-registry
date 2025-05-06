@@ -33,7 +33,6 @@ async function claimItem(itemId, claimer, email) {
         }
         
         const result = await response.json();
-        console.log('Claim successful:', result);
         return result;
     } catch (error) {
         console.error('Error claiming item:', error);
@@ -83,28 +82,62 @@ async function loadItemsAndClaims() {
                                    window.location.hostname === '127.0.0.1' ||
                                    window.location.protocol === 'file:';
         
-        let items;
+        // Fetch items and claims in parallel
+        let itemsPromise;
         if (isLocalEnvironment) {
             // Use mockItems for local development
             console.log('Using mock items in local environment');
-            items = mockItems;
+            itemsPromise = Promise.resolve(mockItems);
         } else {
             // In production, fetch from API
-            const itemsResponse = await fetch(CONFIG.api.endpoints.items);
-            if (!itemsResponse.ok) {
-                const errorData = await itemsResponse.json();
-                throw new Error(errorData.message || MESSAGES.errors.generic.en);
-            }
-            items = await itemsResponse.json();
+            itemsPromise = fetch(CONFIG.api.endpoints.items)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || MESSAGES.errors.generic.en);
+                        });
+                    }
+                    return response.json();
+                });
         }
         
-        console.log('items: ', items);
+        // Fetch claims
+        const claimsPromise = fetch(CONFIG.api.endpoints.claims)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || MESSAGES.errors.generic.en);
+                    });
+                }
+                const claimJson = response.json();
+                return claimJson;
+            })
+            .catch(error => {
+                console.error('Error loading claims:', error);
+                return {}; // Return empty object if claims can't be loaded
+            });
+            
+        // Wait for both promises to resolve
+        const [items, claims] = await Promise.all([itemsPromise, claimsPromise]);
+        
+        // Merge claims data with items
+        const itemsWithClaims = items.map(item => {
+            const claim = claims[item.id];
+            if (claim) {
+                return {
+                    ...item,
+                    claimerEmail: claim.email || '',
+                    verifiedClaim: claim.verified || false
+                };
+            }
+            return item;
+        });
+        
         categoryContainer.innerHTML = '';
         itemsContainer.innerHTML = '';
-
         // Group items by category
         const categories = {};
-        items.forEach(item => {
+        itemsWithClaims.forEach(item => {
             if (!categories[item.category]) {
                 categories[item.category] = {};
             }
@@ -113,8 +146,6 @@ async function loadItemsAndClaims() {
             }
             categories[item.category][item.subcategory].push(item);
         });
-
-        console.log('categories: ', categories);
 
         let categoryContent = '';
         let subcategoryContent = '';
@@ -234,12 +265,16 @@ async function loadItemsAndClaims() {
                 updateSaveButtonState();
             }
         });
-
-        // Load initial claims
-        await loadClaims();
         
-        // Periodically refresh claims
-        setInterval(loadClaims, CONFIG.refreshInterval);
+        // Set up periodic refresh for claims only
+        setInterval(async () => {
+            try {
+                const updatedClaims = await fetch(CONFIG.api.endpoints.claims).then(r => r.json());
+                updateUIWithClaims(updatedClaims);
+            } catch (error) {
+                console.error('Error refreshing claims:', error);
+            }
+        }, CONFIG.refreshInterval);
         
     } catch (error) {
         console.error('Error loading registry:', error);
@@ -265,8 +300,55 @@ async function loadItemsAndClaims() {
     }
 }
 
+// Add a new function to update UI with claims data without rerendering everything
+function updateUIWithClaims(claims) {
+    Object.entries(claims).forEach(([itemId, claim]) => {
+        const itemElement = document.querySelector(`[data-item="${itemId}"]`);
+        if (itemElement) {
+            const emailInput = itemElement.querySelector('.claimer-email');
+            const claimToggle = itemElement.querySelector('.claim-toggle');
+            const statusSpan = itemElement.querySelector('.product-status');
+            
+            if (claim) {
+                // Update status
+                if (statusSpan) {
+                    statusSpan.textContent = 'Taken';
+                    statusSpan.classList.remove('available');
+                    statusSpan.classList.add('taken');
+                }
+                
+                if (emailInput) {
+                    emailInput.value = claim.email || '***@***.***';
+                    emailInput.readOnly = true;
+                }
+                
+                if (claimToggle) {
+                    if (claim.verified) {
+                        claimToggle.textContent = 'Taken by';
+                    } else {
+                        claimToggle.textContent = 'Verifying';
+                    }
+                    claimToggle.setAttribute('disabled', 'true');
+                }
+                
+                // Disable the save button if it exists
+                const saveButton = itemElement.querySelector('.save-button');
+                if (saveButton) {
+                    saveButton.disabled = true;
+                    saveButton.textContent = 'Claimed';
+                }
+                
+                // Disable the name input if it exists
+                const nameInput = itemElement.querySelector('.taken-by');
+                if (nameInput) {
+                    nameInput.disabled = true;
+                }
+            }
+        }
+    });
+}
+
 function createItemHTML(itemId, itemName, itemUrl, item) {
-    console.log('item: ', item);
     const statusSpan = item.claimerEmail ? `<span class="product-status taken">Taken</span>` : `<span class="product-status available">Available</span>`;
     const claimFields = item.claimerEmail ?
     `<div class="claim-actions">

@@ -144,9 +144,7 @@ export function transformSheetDatatoItems(values) {
       subcategory: row[4],
       price: row[5],
       imageUrl: row[6],
-      url: row[7],
-      claimedBy: row[8] || '',
-      claimerEmail: row[9] ? maskEmail(row[9]) : '' // Mask email before sending to frontend
+      url: row[7]
     };
     console.log('[Debug] Transformed item:', item);
     return item;
