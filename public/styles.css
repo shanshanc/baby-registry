@@ -156,6 +156,7 @@ h1 {
   display: flex;
 }
 .save-button {
+  display: block;
   background: #E36C0C;
   color: white;
   border: none;
@@ -190,6 +191,15 @@ h1 {
   color: #777;
   cursor: not-allowed;
 }
+.taken-by {
+  display: block;
+}
+.feedback-message {
+  display: inline-block;
+  color: #4c9d4c;
+  font-style: italic;
+}
+
 .subcategory {
   color: #51423B;
   font-size: 1.4em;

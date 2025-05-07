@@ -10,13 +10,6 @@ export async function onRequest(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
   
-  console.log(`[Debug] Received request for: ${url.pathname}, method: ${request.method}`);
-  console.log('[Debug] Available bindings:', Object.keys(env));
-  console.log('[Debug] KV namespaces:', {
-    CLAIMS: env.CLAIMS ? 'available' : 'missing',
-    RATE_LIMIT: env.RATE_LIMIT ? 'available' : 'missing'
-  });
-
   // Handle OPTIONS request for CORS
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -78,7 +71,7 @@ export async function onRequest(context) {
       return handleResendVerification(request, env);
     } else if (url.pathname === '/api/cleanup' && request.method === 'POST') {
       return handleCleanup(context);
-    } else if (url.pathname === '/verify' && request.method === 'GET') {
+    } else if (url.pathname === '/api/verify' && request.method === 'GET') {
       // Handle verification page requests
       const token = url.searchParams.get('token');
       if (!token) {

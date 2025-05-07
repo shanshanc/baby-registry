@@ -81,7 +81,6 @@ export class RateLimiter {
     const ttl = this.isDev ? 60 : 300; // 60 seconds TTL in dev (minimum allowed), 5 minutes in prod
     await this.kv.put(key, JSON.stringify(validRequests), { expirationTtl: ttl });
     
-    console.log(`[Rate Limit] IP ${ip} request count for ${endpoint}: ${validRequests.length}/${limit}`);
     return false;
   }
 }

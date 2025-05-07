@@ -120,7 +120,7 @@ export async function handleCreateVerification(request, env) {
     console.log('[Debug] Sending verification email for item:', productName);
 
     // Generate verification link
-    const verificationLink = `${origin}/verify?token=${token}`;
+    const verificationLink = `${origin}/api/verify?token=${token}`;
     
     console.log('[Debug] Verification link:', verificationLink);
 

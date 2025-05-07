@@ -22,7 +22,7 @@ export async function sendVerificationEmail(email, itemName, verificationLink, a
         value: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Verify Your Baby Registry Claim</h2>
-            <p>Hello,</p>
+            <p>Hello there,</p>
             <p>Please verify your claim for <strong>${itemName}</strong> by clicking the button below:</p>
             <div style="text-align: center; margin: 20px 0;">
               <a href="${verificationLink}" 
@@ -31,7 +31,7 @@ export async function sendVerificationEmail(email, itemName, verificationLink, a
               </a>
             </div>
             <p>This link will expire in 24 hours.</p>
-            <p>Thank you!</p>
+            <p>Thank you!<br>Daphne & Hsin</p>
           </div>
         `
       }
@@ -79,10 +79,10 @@ export async function sendClaimConfirmationEmail(email, itemName, apiKey) {
         value: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Claim Confirmed</h2>
-            <p>Hello,</p>
+            <p>Hello there,</p>
             <p>Your claim for <strong>${itemName}</strong> has been confirmed.</p>
             <p>Thank you for participating in the baby registry!</p>
-            <p>Best regards,<br>Baby Registry Team</p>
+            <p>Best regards,<br>Daphne & Hsin</p>
           </div>
         `
       }

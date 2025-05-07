@@ -40,38 +40,6 @@ async function claimItem(itemId, claimer, email) {
     }
 }
 
-async function loadClaims() {
-    try {
-        const response = await fetch(CONFIG.api.endpoints.claims);
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || MESSAGES.errors.generic.en);
-        }
-        const claims = await response.json();
-        
-        // Update UI with claims
-        Object.entries(claims).forEach(([itemId, claim]) => {
-            const itemElement = document.querySelector(`[data-item="${itemId}"]`);
-            if (itemElement) {
-                const emailInput = itemElement.querySelector('.claimer-email');
-                const claimToggle = itemElement.querySelector('.claim-toggle');
-                
-                if (claim) {
-                    if (claim.verified) {
-                        emailInput.value = claim.email || '***@***.***';
-                    } else {
-                        emailInput.value = claim.email || '***@***.***';
-                        claimToggle.textContent = 'Verifying';
-                        claimToggle.setAttribute('disabled', 'true');
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error loading claims:', error);
-    }
-}
-
 async function loadItemsAndClaims() {
     const categoryContainer = document.getElementById('category-container');
     const itemsContainer = document.getElementById('items-container');
@@ -358,11 +326,11 @@ function createItemHTML(itemId, itemName, itemUrl, item) {
         </div>
     </div>`: `<div class="claim-actions">
         <div class="claim-fields visible">
-            <input type="text" class="taken-by" placeholder="Your name" style="display: block;">
+            <input type="text" class="taken-by" placeholder="Your name">
             <input type="email" class="claimer-email" placeholder="Your email">
             <span class="claim-toggle">Click Save to take this item</span>
-            <button class="save-button" style="display: block;" disabled>Save</button>
-            <span class="feedback-message" style="display: none; color: green;"></span>
+            <button class="save-button" disabled>Save</button>
+            <span class="feedback-message"></span>
         </div>
     </div>`;
     
