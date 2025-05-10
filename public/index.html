@@ -6,28 +6,21 @@
     <title>Baby Registry</title>
     <link rel="icon" href="img/heart.png">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="constants.js"></script>
     <script src="scripts.js" type="module" defer></script>
 </head>
 <body>
     <div class="container">
         <h1>Baby Registry</h1>
+        <h3 class="address">寄送地址: 新北市新店區碧潭和美山登山步道旁 <i class="fa-solid fa-baby-carriage"></i></h3>
         <div class="registry-wrapper">
           <div class="sidebar" id="sidebar">
             <div class="controls">
-              <label><input type="checkbox" id="expand-all" name="toggle-all"> Expand All</label>
-              <label><input type="checkbox" id="collapse-all" name="toggle-all"> Collapse All</label>
+              <label><input type="checkbox" id="expand-all" name="toggle-all">展開全部</label>
+              <label><input type="checkbox" id="collapse-all" name="toggle-all"> 摺疊全部</label>
             </div>
             <div class="categories" id="category-container">
-              <div class="category">
-                  <h2 onclick="toggleCategory(this)" class="active">Feeding</h2>
-              </div>
-              <div class="category">
-                  <h2 onclick="toggleCategory(this)">Essentials</h2>
-              </div>
-              <div class="category">
-                  <h2 onclick="toggleCategory(this)">Travel</h2>
-              </div>
             </div>
           </div>
           <div class="content" id="items-container"></div>

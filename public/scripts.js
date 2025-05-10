@@ -1,4 +1,5 @@
 import mockItems from './data/items.js';
+import { Category, Subcategory, CATEGORY_TO_SUBCATEGORIES } from './types.js';
 
 function toggleItems(itemEle) {
     // Toggle the selected category header
@@ -77,8 +78,7 @@ async function loadItemsAndClaims() {
                         throw new Error(errorData.error || MESSAGES.errors.generic.en);
                     });
                 }
-                const claimJson = response.json();
-                return claimJson;
+                return response.json();
             })
             .catch(error => {
                 console.error('Error loading claims:', error);
@@ -87,7 +87,6 @@ async function loadItemsAndClaims() {
             
         // Wait for both promises to resolve
         const [items, claims] = await Promise.all([itemsPromise, claimsPromise]);
-        
         // Merge claims data with items
         const itemsWithClaims = items.map(item => {
             const claim = claims[item.id];
@@ -103,49 +102,70 @@ async function loadItemsAndClaims() {
         
         categoryContainer.innerHTML = '';
         itemsContainer.innerHTML = '';
-        // Group items by category
+        
+        // Initialize categories object from Category enum
         const categories = {};
+        for (const catKey in Category) {
+            categories[Category[catKey]] = {}; // Initialize with empty subcategories
+        }
+
+        // Group items by category and subcategory
         itemsWithClaims.forEach(item => {
-            if (!categories[item.category]) {
-                categories[item.category] = {};
+            if (categories[item.category]) { // Ensure category exists
+                if (!categories[item.category][item.subcategory]) {
+                    categories[item.category][item.subcategory] = [];
+                }
+                categories[item.category][item.subcategory].push(item);
+            } else {
+                console.warn(`Item with unknown category: ${item.category}`, item);
             }
-            if (!categories[item.category][item.subcategory]) {
-                categories[item.category][item.subcategory] = [];
-            }
-            categories[item.category][item.subcategory].push(item);
         });
 
         let categoryContent = '';
         let subcategoryContent = '';
+        let firstCategory = true; // To make the first category active
 
-        Object.entries(categories).forEach(([categoryName, subcategories], index) => {
+        // Iterate over Category enum to maintain order and include all categories
+        Object.values(Category).forEach(categoryName => {
+            const subcategories = categories[categoryName];
+            
             // Prepare categories
             const categoryDiv = document.createElement('div');
             categoryDiv.className = 'category';
-            categoryDiv.innerHTML = `<h2 class="${index === 0 ? 'active' : ''}">${categoryName}</h2>`;
+            categoryDiv.innerHTML = `<h2 class="${firstCategory ? 'active' : ''}">${categoryName}</h2>`;
             categoryContent += categoryDiv.outerHTML;
             
-            // Prepare subcategories and items
-            const subcategoryDiv = document.createElement('div');
-            subcategoryDiv.className = 'category-items';
-            if (index === 0) {
-                subcategoryDiv.classList.add('active');
+            // Prepare subcategories and items container
+            const subcategoryItemsContainerDiv = document.createElement('div');
+            subcategoryItemsContainerDiv.className = 'category-items';
+            if (firstCategory) {
+                subcategoryItemsContainerDiv.classList.add('active');
             }
-            subcategoryDiv.setAttribute('data-category', categoryName);
-
-            // Prepare subcategories and items
-            Object.entries(subcategories).forEach(([subcategoryName, subcategoryItems]) => {
-                // Add subcategory header only once
-                subcategoryDiv.innerHTML += `<div class="subcategory">${subcategoryName}</div>`;
-                
-                // Add all items under this subcategory
-                let itemsHTML = '';
-                subcategoryItems.forEach(item => {
-                    itemsHTML += createItemHTML(item.id, item.product, item.url, item);
+            subcategoryItemsContainerDiv.setAttribute('data-category', categoryName);
+            
+            let currentSubcategoryHTML = '';
+            if (subcategories && Object.keys(subcategories).length > 0) {
+                Object.entries(subcategories).forEach(([subcategoryName, subcategoryItems]) => {
+                    // Add subcategory header only once
+                    currentSubcategoryHTML += `<div class="subcategory">${subcategoryName}</div>`;
+                    
+                    // Add all items under this subcategory
+                    let itemsHTML = '';
+                    subcategoryItems.forEach(item => {
+                        itemsHTML += createItemHTML(item.id, item.product, item.url, item);
+                    });
+                    currentSubcategoryHTML += itemsHTML;
                 });
-                subcategoryDiv.innerHTML += itemsHTML;
-            });
-            subcategoryContent += subcategoryDiv.outerHTML;
+            } else {
+                // Handle empty categories (display a message or leave empty)
+                currentSubcategoryHTML = '<p class="empty-category-message">No items in this category yet.</p>';
+            }
+            subcategoryItemsContainerDiv.innerHTML = currentSubcategoryHTML;
+            subcategoryContent += subcategoryItemsContainerDiv.outerHTML;
+
+            if (firstCategory) {
+                firstCategory = false;
+            }
         });
 
         // Append category content to container
@@ -165,29 +185,20 @@ async function loadItemsAndClaims() {
             // Only add listeners if a save button exists (i.e., item is not claimed)
             if (saveButton) {
                 const nameInput = itemDiv.querySelector('.taken-by');
-                const emailInput = itemDiv.querySelector('.claimer-email');
                 const itemId = itemDiv.dataset.item;
 
                 const updateSaveButtonState = () => {
                     const nameValue = nameInput.value.trim();
-                    const emailValue = emailInput.value.trim();
-                    
-                    // Add email format validation
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    const isValidEmail = emailValue && emailRegex.test(emailValue);
-                    
                     // Disable button if name is empty or email is empty/invalid
-                    saveButton.disabled = !(nameValue && isValidEmail);
+                    saveButton.disabled = !nameValue;
                 };
 
                 // Add input listeners to check field values
                 nameInput.addEventListener('input', updateSaveButtonState);
-                emailInput.addEventListener('input', updateSaveButtonState);
 
                 // Add click listener to the save button
                 saveButton.addEventListener('click', async () => {
                     const claimer = nameInput.value.trim();
-                    const email = emailInput.value.trim();
 
                     // Double-check values before claiming (though button should be disabled if invalid)
                     if (claimer && email) {
@@ -196,7 +207,6 @@ async function loadItemsAndClaims() {
                             saveButton.textContent = 'Saving...';
                             saveButton.disabled = true;
                             nameInput.disabled = true;
-                            emailInput.disabled = true;
 
                             await claimItem(itemId, claimer, email);
                             
@@ -214,7 +224,6 @@ async function loadItemsAndClaims() {
                             // Keep inputs disabled
                             saveButton.disabled = true;
                             nameInput.disabled = true;
-                            emailInput.disabled = true;
                             saveButton.textContent = 'Saved';
                         } catch (error) {
                             // Re-enable fields if claim fails
@@ -222,8 +231,6 @@ async function loadItemsAndClaims() {
                             // Re-enable based on current input state might be better
                             saveButton.disabled = false;
                             nameInput.disabled = false;
-                            emailInput.disabled = false;
-                            // Reset button state based on inputs
                             updateSaveButtonState();
                         }
                     }
@@ -273,7 +280,6 @@ function updateUIWithClaims(claims) {
     Object.entries(claims).forEach(([itemId, claim]) => {
         const itemElement = document.querySelector(`[data-item="${itemId}"]`);
         if (itemElement) {
-            const emailInput = itemElement.querySelector('.claimer-email');
             const claimToggle = itemElement.querySelector('.claim-toggle');
             const statusSpan = itemElement.querySelector('.product-status');
             
@@ -283,11 +289,6 @@ function updateUIWithClaims(claims) {
                     statusSpan.textContent = 'Taken';
                     statusSpan.classList.remove('available');
                     statusSpan.classList.add('taken');
-                }
-                
-                if (emailInput) {
-                    emailInput.value = claim.email || '***@***.***';
-                    emailInput.readOnly = true;
                 }
                 
                 if (claimToggle) {
@@ -317,20 +318,32 @@ function updateUIWithClaims(claims) {
 }
 
 function createItemHTML(itemId, itemName, itemUrl, item) {
-    const statusSpan = item.claimerEmail ? `<span class="product-status taken">Taken</span>` : `<span class="product-status available">Available</span>`;
-    const claimFields = item.claimerEmail ?
+    console.log('[Debug] item', item);
+    
+    // Special handling for Donate category items
+    if (item.category === 'Donate') {
+        return `
+            <div class="item" data-item="${itemId}">
+                <div class="item-content donate-info">
+                    <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
+                    ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${itemName}" class="donate-image">` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Regular item handling
+    const statusSpan = item.claimer ? `<span class="product-status taken">Taken</span>` : `<span class="product-status available">Available</span>`;
+    const claimFields = item.claimer ?
     `<div class="claim-actions">
         <span class="claim-toggle" disabled="true">Taken by</span>
         <div class="claim-fields visible">
-            <input type="email" class="claimer-email" value=${item.claimerEmail} readonly="true">
+            <input type="email" class="claimer-name" value=${item.claimer} readonly="true">
         </div>
     </div>`: `<div class="claim-actions">
         <div class="claim-fields visible">
-            <input type="text" class="taken-by" placeholder="Your name">
-            <input type="email" class="claimer-email" placeholder="Your email">
-            <span class="claim-toggle">Click Save to take this item</span>
+            <input type="text" class="taken-by" placeholder="您的大名❤️">
             <button class="save-button" disabled>Save</button>
-            <span class="feedback-message"></span>
         </div>
     </div>`;
     
@@ -340,10 +353,10 @@ function createItemHTML(itemId, itemName, itemUrl, item) {
                 ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${itemName}" class="item-image">` : ''}
                 <div class="item-details">
                     <div class="product-header">
-                        ${itemUrl ? `<a href="${itemUrl}" class="product-name" target="_blank" rel="">${itemName}</a>` : ''}
+                        ${itemUrl ? `<a href="${itemUrl}" class="product-name" target="_blank" rel="">${item.productZH}</a>` : ''}
                         ${statusSpan}
                     </div>
-                    ${item.productZH ? `<div class="product-name-zh">${item.productZH}</div>` : ''}
+                    ${itemUrl ? `<div class="product-url"><span>查看產品: </span><a href="${itemUrl}" class="product-url" target="_blank" rel="">連結</a></div>` : ''}
                     ${item.price ? `<div class="product-price">$${item.price}</div>` : ''}
                     ${claimFields}
                 </div>
