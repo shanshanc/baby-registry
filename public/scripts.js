@@ -1,4 +1,3 @@
-import mockItems from './data/items.js';
 import { Category, Subcategory, CATEGORY_TO_SUBCATEGORIES } from './types.js';
 
 function toggleItems(itemEle) {
@@ -46,29 +45,16 @@ async function loadItemsAndClaims() {
     const itemsContainer = document.getElementById('items-container');
     
     try {
-        // Check if we're in a local environment
-        const isLocalEnvironment = window.location.hostname === 'localhost' || 
-                                   window.location.hostname === '127.0.0.1' ||
-                                   window.location.protocol === 'file:';
-        
         // Fetch items and claims in parallel
-        let itemsPromise;
-        if (isLocalEnvironment) {
-            // Use mockItems for local development
-            console.log('Using mock items in local environment');
-            itemsPromise = Promise.resolve(mockItems);
-        } else {
-            // In production, fetch from API
-            itemsPromise = fetch(CONFIG.api.endpoints.items)
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errorData => {
-                            throw new Error(errorData.message || MESSAGES.errors.generic.en);
-                        });
-                    }
-                    return response.json();
-                });
-        }
+        const itemsPromise = fetch(CONFIG.api.endpoints.items)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || MESSAGES.errors.generic.en);
+                    });
+                }
+                return response.json();
+            });
         
         // Fetch claims
         const claimsPromise = fetch(CONFIG.api.endpoints.claims)
@@ -426,7 +412,10 @@ function updateControlCheckboxesState() {
     }
 }
 
-function start() {
+async function start() {
+    // Wait for configuration to load
+    await loadConfig();
+    
     loadItemsAndClaims().then(() => {
         // Initial state check after items are loaded and rendered
         console.log('initial state update');

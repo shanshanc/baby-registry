@@ -1,10 +1,8 @@
 import { corsHeaders, errorResponse, RateLimiter } from './utils';
 import { handleGetClaims, handlePostClaim } from './claims';
 import { handleGetItems } from './items';
-import { handleTestEmail } from './testEmail';
 import { handleVerifyToken, handleResendVerification } from './verification';
 import { handleCreateVerification } from './verificationHandler';
-import { onRequestPost as handleCleanup } from './cleanup';
 
 export async function onRequest(context) {
   const { request, env, next } = context;
@@ -52,7 +50,18 @@ export async function onRequest(context) {
     }
 
     // Route handling
-    if (url.pathname === '/api/items' && request.method === 'GET') {
+    if (url.pathname === '/api/config' && request.method === 'GET') {
+      // Return configuration values from environment
+      return new Response(JSON.stringify({
+        itemsEndpoint: env.BASE_URL_ITEMS_DEV || env.BASE_URL_ITEMS_PROD,
+        refreshInterval: 30000
+      }), {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+    } else if (url.pathname === '/api/items' && request.method === 'GET') {
       return handleGetItems(env);
     } else if (url.pathname === '/api/claims' && request.method === 'GET') {
       // List all keys in CLAIMS namespace for debugging
@@ -61,16 +70,12 @@ export async function onRequest(context) {
       return handleGetClaims(env);
     } else if (url.pathname === '/api/claim' && request.method === 'POST') {
       return handlePostClaim(request, env);
-    } else if (url.pathname === '/api/test-email' && request.method === 'POST') {
-      return handleTestEmail(request, env);
     } else if (url.pathname === '/api/verify/create' && request.method === 'POST') {
       return handleCreateVerification(request, env);
     } else if (url.pathname === '/api/verify/token' && request.method === 'POST') {
       return handleVerifyToken(request, env);
     } else if (url.pathname === '/api/verify/resend' && request.method === 'POST') {
       return handleResendVerification(request, env);
-    } else if (url.pathname === '/api/cleanup' && request.method === 'POST') {
-      return handleCleanup(context);
     } else if (url.pathname === '/api/verify' && request.method === 'GET') {
       // Handle verification page requests
       const token = url.searchParams.get('token');

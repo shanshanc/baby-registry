@@ -1,13 +1,42 @@
+// Default configuration that will be overridden by API values
 const CONFIG = {
   refreshInterval: 30000, // Claims refresh interval in milliseconds
   api: {
     endpoints: {
-      items: '/api/items',
+      items: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') 
+            ? 'http://localhost:8787/items' 
+            : '',
       claims: '/api/claims',
-      claim: '/api/claim'
+      claim: '/api/claim',
+      config: '/api/config'
     }
   }
 };
+
+// Fetch configuration from API
+async function loadConfig() {
+  try {
+    const response = await fetch(CONFIG.api.endpoints.config);
+    if (response.ok) {
+      const config = await response.json();
+      // Update CONFIG with values from API
+      if (config.itemsEndpoint) {
+        CONFIG.api.endpoints.items = config.itemsEndpoint;
+      }
+      if (config.refreshInterval) {
+        CONFIG.refreshInterval = config.refreshInterval;
+      }
+      console.log('Configuration loaded from API:', CONFIG);
+    } else {
+      console.warn('Failed to load configuration from API, using defaults');
+    }
+  } catch (error) {
+    console.error('Error loading configuration:', error);
+  }
+}
+
+// Load configuration when the script runs
+loadConfig();
 
 const MESSAGES = {
   errors: {
