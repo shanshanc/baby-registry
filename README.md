@@ -15,7 +15,7 @@ A simple baby registry web application built with Cloudflare Pages, KV storage, 
 ├── functions/           # Cloudflare Pages Functions
 │   └── api/
 │       └── _middleware.js  # API request handler
-├── public/             # Static assets
+├── public/js             # Static assets
 │   ├── data/
 │   │   └── items.json  # Registry items data
 │   ├── index.html      # Main page

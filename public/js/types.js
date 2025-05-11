@@ -44,8 +44,17 @@ export const SubcategoryZH = {
 
 // Mapping from category to subcategories
 export const CATEGORY_TO_SUBCATEGORIES = {
-  [Category.Feeding]: [Subcategory.Breastfeeding, Subcategory.BottleFeeding],
+  [Category.Feeding]: [Subcategory.Breastfeeding, Subcategory.Bottlefeeding],
   [Category.Essential]: [Subcategory.BabyCare, Subcategory.Bathing, Subcategory.Clothing],
   [Category.Gear]: [Subcategory.Travel],
   [Category.Donate]: [Subcategory.DonateQRCode]
+};
+
+// UI Text Constants for Claims
+export const ClaimText = {
+  CLAIM: "認領",           // Button text for claiming an item
+  CLAIMED: "已認領",       // Text showing an item is claimed
+  SAVING: "Saving...",    // Text during save operation
+  AVAILABLE: "Available",  // Text for available status
+  TAKEN: "Taken"          // Text for taken status
 };

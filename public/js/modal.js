@@ -13,7 +13,6 @@ export function initModal() {
 
 // Function to show the modal
 export function showClaimSuccessModal() {
-    console.log('showClaimSuccessModal');
     const modal = document.getElementById('claim-success-modal');
     if (modal) {
         modal.classList.add('active');
