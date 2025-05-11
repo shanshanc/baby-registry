@@ -9,15 +9,37 @@ export const Category = {
   Donate: "Donate"
 };
 
+// Category Mandarin translations
+export const CategoryZH = {
+  [Category.Feeding]: "哺乳",
+  [Category.Essential]: "生活用品",
+  [Category.Sleeping]: "嬰兒床寢具",
+  [Category.Gear]: "外出用品",
+  [Category.Toy]: "玩具",
+  [Category.Mom]: "媽媽用品",
+  [Category.Donate]: "直接贊助"
+};
+
 // Subcategory enum-like object
 export const Subcategory = {
   Breastfeeding: "Breastfeeding",
-  BottleFeeding: "Bottle-feeding",
+  Bottlefeeding: "Bottlefeeding",
   Bathing: "Bathing",
-  BabyCare: "Baby Care",
+  BabyCare: "BabyCare",
   Travel: "Travel",
   Clothing: "Clothing",
-  DonateQRCode: "Scan QR Code to Donate"
+  DonateQRCode: "DonateQRCode"
+};
+
+// Subcategory Mandarin translations
+export const SubcategoryZH = {
+  [Subcategory.Breastfeeding]: "母乳哺餵",
+  [Subcategory.Bottlefeeding]: "奶瓶奶嘴週邊",
+  [Subcategory.Bathing]: "沐浴清潔",
+  [Subcategory.BabyCare]: "嬰兒護理",
+  [Subcategory.Travel]: "外出用品",
+  [Subcategory.Clothing]: "童裝",
+  [Subcategory.DonateQRCode]: "掃描QR碼贊助"
 };
 
 // Mapping from category to subcategories

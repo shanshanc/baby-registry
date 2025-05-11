@@ -1,6 +1,11 @@
 // Default configuration that will be overridden by API values
 const CONFIG = {
-  refreshInterval: 30000, // Claims refresh interval in milliseconds
+  // Refresh interval in milliseconds
+  // Considerations:
+  // - Too frequent (e.g., 3s): High load on Durable Object, unnecessary updates
+  // - Too infrequent (e.g., 60s): Delayed updates for concurrent users
+  // - 15s is a good balance between real-time updates and performance
+  refreshInterval: 15000,
   api: {
     endpoints: {
       items: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') 

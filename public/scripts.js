@@ -1,8 +1,8 @@
-import { Category, Subcategory, CATEGORY_TO_SUBCATEGORIES } from './types.js';
+import { Category, Subcategory, CATEGORY_TO_SUBCATEGORIES, CategoryZH, SubcategoryZH } from './types.js';
 
 function toggleItems(itemEle) {
     // Toggle the selected category header
-    const selectedCategory = itemEle.innerText;
+    const selectedCategory = itemEle.dataset.category;
     itemEle.classList.toggle('active');
 
     // Toggle the selected subcategory items container
@@ -15,15 +15,14 @@ function toggleItems(itemEle) {
     updateControlCheckboxesState();
 }
 
-async function claimItem(itemId, claimer, email) {
+async function claimItem(itemId, claimer) {
     try {
-        const response = await fetch(CONFIG.api.endpoints.claim, {
-            method: 'POST',
+        const response = await fetch(`${CONFIG.api.endpoints.items}/${itemId}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                item: itemId, 
-                claimer,
-                email 
+                id: itemId,
+                takenBy: claimer
             })
         });
         
@@ -40,12 +39,110 @@ async function claimItem(itemId, claimer, email) {
     }
 }
 
-async function loadItemsAndClaims() {
+// Add filter and search state
+let currentFilter = 'all';
+let currentSearch = '';
+
+function filterAndSearchItems() {
+    const items = document.querySelectorAll('.item');
+    const categories = document.querySelectorAll('.category-items');
+    
+    items.forEach(item => {
+        const status = item.querySelector('.product-status');
+        const productName = item.querySelector('.product-name')?.textContent || '';
+        const productNameZH = item.querySelector('.product-name')?.textContent || '';
+        
+        const matchesFilter = currentFilter === 'all' || 
+            (currentFilter === 'available' && status?.classList.contains('available')) ||
+            (currentFilter === 'taken' && status?.classList.contains('taken'));
+            
+        const matchesSearch = !currentSearch || 
+            productName.toLowerCase().includes(currentSearch.toLowerCase()) ||
+            productNameZH.toLowerCase().includes(currentSearch.toLowerCase());
+            
+        const isVisible = matchesFilter && matchesSearch;
+        item.style.display = isVisible ? '' : 'none';
+    });
+    
+    // Keep categories visible but update their content visibility
+    categories.forEach(category => {
+        const categoryHeader = document.querySelector(`.category h2[data-category="${category.dataset.category}"]`);
+        
+        // Always keep category header visible
+        if (categoryHeader) {
+            categoryHeader.style.display = '';
+        }
+        
+        // If category is active (expanded), show it regardless of content
+        if (category.classList.contains('active')) {
+            category.style.display = '';
+        }
+    });
+    
+    // Update expand/collapse state
+    updateControlCheckboxesState();
+}
+
+function attachFilterListeners() {
+    const filterInputs = document.querySelectorAll('input[name="status-filter"]');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            currentFilter = e.target.value;
+            filterAndSearchItems();
+        });
+    });
+}
+
+function attachSearchListener() {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentSearch = e.target.value.trim();
+            filterAndSearchItems();
+        });
+    }
+}
+
+async function loadItems() {
     const categoryContainer = document.getElementById('category-container');
     const itemsContainer = document.getElementById('items-container');
     
+    // Add filter and search controls to the sidebar after expand/collapse controls
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        const controls = document.createElement('div');
+        controls.className = 'filter-search-controls';
+        controls.innerHTML = `
+            <div class="filter-controls">
+                <div class="filter-controls-label">篩選認領狀態</div>
+                <div class="filter-controls-radio">
+                  <label>
+                    <input type="radio" name="status-filter" value="all" checked> All
+                  </label>
+                  <label>
+                      <input type="radio" name="status-filter" value="available"> Available
+                  </label>
+                  <label>
+                      <input type="radio" name="status-filter" value="taken"> Taken
+                  </label>
+                </div>
+            </div>
+            <div class="search-control">
+                <div class="search-control-label">搜尋產品</div>
+                <input type="text" id="search-input" placeholder="Search items...">
+            </div>
+        `;
+        // Find the controls div and insert after it
+        const existingControls = sidebar.querySelector('.controls');
+        if (existingControls) {
+            existingControls.insertAdjacentElement('afterend', controls);
+        } else {
+            sidebar.insertBefore(controls, sidebar.firstChild);
+        }
+    }
+    
     try {
-        // Fetch items and claims in parallel
+        // Fetch items from Durable Object
         const itemsPromise = fetch(CONFIG.api.endpoints.items)
             .then(response => {
                 if (!response.ok) {
@@ -56,35 +153,11 @@ async function loadItemsAndClaims() {
                 return response.json();
             });
         
-        // Fetch claims
-        const claimsPromise = fetch(CONFIG.api.endpoints.claims)
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.error || MESSAGES.errors.generic.en);
-                    });
-                }
-                return response.json();
-            })
-            .catch(error => {
-                console.error('Error loading claims:', error);
-                return {}; // Return empty object if claims can't be loaded
-            });
-            
-        // Wait for both promises to resolve
-        const [items, claims] = await Promise.all([itemsPromise, claimsPromise]);
-        // Merge claims data with items
-        const itemsWithClaims = items.map(item => {
-            const claim = claims[item.id];
-            if (claim) {
-                return {
-                    ...item,
-                    claimerEmail: claim.email || '',
-                    verifiedClaim: claim.verified || false
-                };
-            }
-            return item;
-        });
+        // Wait for items to resolve
+        const items = await itemsPromise;
+        
+        // Store initial items state for comparison
+        window.lastItemsState = JSON.stringify(items);
         
         categoryContainer.innerHTML = '';
         itemsContainer.innerHTML = '';
@@ -96,7 +169,7 @@ async function loadItemsAndClaims() {
         }
 
         // Group items by category and subcategory
-        itemsWithClaims.forEach(item => {
+        items.forEach(item => {
             if (categories[item.category]) { // Ensure category exists
                 if (!categories[item.category][item.subcategory]) {
                     categories[item.category][item.subcategory] = [];
@@ -118,7 +191,7 @@ async function loadItemsAndClaims() {
             // Prepare categories
             const categoryDiv = document.createElement('div');
             categoryDiv.className = 'category';
-            categoryDiv.innerHTML = `<h2 class="${firstCategory ? 'active' : ''}">${categoryName}</h2>`;
+            categoryDiv.innerHTML = `<h2 class="cat-${categoryName.toLocaleLowerCase()} ${firstCategory ? 'active' : ''}" data-category="${categoryName}">${CategoryZH[categoryName]}</h2>`;
             categoryContent += categoryDiv.outerHTML;
             
             // Prepare subcategories and items container
@@ -133,12 +206,11 @@ async function loadItemsAndClaims() {
             if (subcategories && Object.keys(subcategories).length > 0) {
                 Object.entries(subcategories).forEach(([subcategoryName, subcategoryItems]) => {
                     // Add subcategory header only once
-                    currentSubcategoryHTML += `<div class="subcategory">${subcategoryName}</div>`;
-                    
+                    currentSubcategoryHTML += `<div class="subcategory sub-${subcategoryName.toLowerCase().replace(/[^a-z0-9]/g, '-')}">${SubcategoryZH[subcategoryName] ? SubcategoryZH[subcategoryName] : subcategoryName}</div>`;
                     // Add all items under this subcategory
                     let itemsHTML = '';
                     subcategoryItems.forEach(item => {
-                        itemsHTML += createItemHTML(item.id, item.product, item.url, item);
+                        itemsHTML += createItemHTML(item);
                     });
                     currentSubcategoryHTML += itemsHTML;
                 });
@@ -175,7 +247,7 @@ async function loadItemsAndClaims() {
 
                 const updateSaveButtonState = () => {
                     const nameValue = nameInput.value.trim();
-                    // Disable button if name is empty or email is empty/invalid
+                    // Disable button if name is empty
                     saveButton.disabled = !nameValue;
                 };
 
@@ -186,20 +258,15 @@ async function loadItemsAndClaims() {
                 saveButton.addEventListener('click', async () => {
                     const claimer = nameInput.value.trim();
 
-                    // Double-check values before claiming (though button should be disabled if invalid)
-                    if (claimer && email) {
+                    // Double-check values before claiming
+                    if (claimer) {
                         try {
                             // Optional: Add visual feedback (e.g., disable fields, show spinner)
                             saveButton.textContent = 'Saving...';
                             saveButton.disabled = true;
                             nameInput.disabled = true;
 
-                            await claimItem(itemId, claimer, email);
-                            
-                            // Update UI to show success message
-                            const feedbackSpan = itemDiv.querySelector('.feedback-message');
-                            feedbackSpan.textContent = 'Item claimed successfully! Please check your email to confirm.';
-                            feedbackSpan.style.display = 'inline-block';
+                            await claimItem(itemId, claimer);
                             
                             // Hide the claim toggle message
                             const claimToggle = itemDiv.querySelector('.claim-toggle');
@@ -210,11 +277,10 @@ async function loadItemsAndClaims() {
                             // Keep inputs disabled
                             saveButton.disabled = true;
                             nameInput.disabled = true;
-                            saveButton.textContent = 'Saved';
+                            saveButton.textContent = '已認領';
                         } catch (error) {
                             // Re-enable fields if claim fails
-                            saveButton.textContent = 'Save';
-                            // Re-enable based on current input state might be better
+                            saveButton.textContent = '認領';
                             saveButton.disabled = false;
                             nameInput.disabled = false;
                             updateSaveButtonState();
@@ -227,15 +293,19 @@ async function loadItemsAndClaims() {
             }
         });
         
-        // Set up periodic refresh for claims only
+        // Set up periodic refresh
         setInterval(async () => {
             try {
-                const updatedClaims = await fetch(CONFIG.api.endpoints.claims).then(r => r.json());
-                updateUIWithClaims(updatedClaims);
+                const updatedItems = await fetch(CONFIG.api.endpoints.items).then(r => r.json());
+                updateUIWithItems(updatedItems);
             } catch (error) {
-                console.error('Error refreshing claims:', error);
+                console.error('Error refreshing items:', error);
             }
         }, CONFIG.refreshInterval);
+        
+        // Attach filter and search listeners after items are loaded
+        attachFilterListeners();
+        attachSearchListener();
         
     } catch (error) {
         console.error('Error loading registry:', error);
@@ -261,94 +331,159 @@ async function loadItemsAndClaims() {
     }
 }
 
-// Add a new function to update UI with claims data without rerendering everything
-function updateUIWithClaims(claims) {
-    Object.entries(claims).forEach(([itemId, claim]) => {
-        const itemElement = document.querySelector(`[data-item="${itemId}"]`);
-        if (itemElement) {
-            const claimToggle = itemElement.querySelector('.claim-toggle');
-            const statusSpan = itemElement.querySelector('.product-status');
-            
-            if (claim) {
-                // Update status
-                if (statusSpan) {
-                    statusSpan.textContent = 'Taken';
-                    statusSpan.classList.remove('available');
-                    statusSpan.classList.add('taken');
-                }
-                
-                if (claimToggle) {
-                    if (claim.verified) {
-                        claimToggle.textContent = 'Taken by';
-                    } else {
-                        claimToggle.textContent = 'Verifying';
-                    }
-                    claimToggle.setAttribute('disabled', 'true');
-                }
-                
-                // Disable the save button if it exists
-                const saveButton = itemElement.querySelector('.save-button');
-                if (saveButton) {
-                    saveButton.disabled = true;
-                    saveButton.textContent = 'Claimed';
-                }
-                
-                // Disable the name input if it exists
-                const nameInput = itemElement.querySelector('.taken-by');
-                if (nameInput) {
-                    nameInput.disabled = true;
-                }
-            }
-        }
-    });
-}
-
-function createItemHTML(itemId, itemName, itemUrl, item) {
-    console.log('[Debug] item', item);
-    
+function createItemHTML(item) {
+    const productName = item.product.toLowerCase().replace(/ /g, '-');
     // Special handling for Donate category items
     if (item.category === 'Donate') {
         return `
-            <div class="item" data-item="${itemId}">
+            <div class="item" data-item="${item.id}">
                 <div class="item-content donate-info">
                     <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
-                    ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${itemName}" class="donate-image">` : ''}
+                    ${item.imageUrl ? `<img src="${item.imageUrl}" alt="Donate QR Code" class="donate-image">` : ''}
                 </div>
             </div>
         `;
     }
     
     // Regular item handling
-    const statusSpan = item.claimer ? `<span class="product-status taken">Taken</span>` : `<span class="product-status available">Available</span>`;
-    const claimFields = item.claimer ?
+    const statusSpan = item.takenBy ? `<span class="product-status taken">Taken</span>` : `<span class="product-status available">Available</span>`;
+    const claimFields = item.takenBy ?
     `<div class="claim-actions">
-        <span class="claim-toggle" disabled="true">Taken by</span>
         <div class="claim-fields visible">
-            <input type="email" class="claimer-name" value=${item.claimer} readonly="true">
+            <input type="text" class="claimer-name" value="${item.takenBy}" readonly="true">
+            <span class="claim-toggle" disabled="true">已認領</span>
         </div>
     </div>`: `<div class="claim-actions">
         <div class="claim-fields visible">
-            <input type="text" class="taken-by" placeholder="您的大名❤️">
-            <button class="save-button" disabled>Save</button>
+            <input type="text" class="taken-by" placeholder="您的大名 💕">
+            <button class="save-button" disabled>認領</button>
         </div>
     </div>`;
     
     return `
-        <div class="item" data-item="${itemId}">
+        <div class="item" data-item="${item.id}">
             <div class="item-content">
-                ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${itemName}" class="item-image">` : ''}
+                ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${productName}" class="item-image">` : ''}
                 <div class="item-details">
                     <div class="product-header">
-                        ${itemUrl ? `<a href="${itemUrl}" class="product-name" target="_blank" rel="">${item.productZH}</a>` : ''}
+                        ${item.url ? `<a href="${item.url}" class="product-name" target="_blank" rel="">${item.productZH}</a>` : ''}
                         ${statusSpan}
                     </div>
-                    ${itemUrl ? `<div class="product-url"><span>查看產品: </span><a href="${itemUrl}" class="product-url" target="_blank" rel="">連結</a></div>` : ''}
+                    ${item.url ? `<div class="product-url"><span>查看產品: </span><a href="${item.url}" class="product-url" target="_blank" rel="">連結</a></div>` : ''}
                     ${item.price ? `<div class="product-price">$${item.price}</div>` : ''}
                     ${claimFields}
                 </div>
             </div>
         </div>
     `;
+}
+
+// Update UI with new items data
+function updateUIWithItems(items) {
+    // Compare with last state to avoid unnecessary updates
+    const currentState = JSON.stringify(items);
+    if (currentState === window.lastItemsState) {
+        return; // No changes, skip update
+    }
+    window.lastItemsState = currentState;
+
+    // Track which items were updated to avoid duplicate processing
+    const updatedItems = new Set();
+    
+    items.forEach(item => {
+        const itemElement = document.querySelector(`[data-item="${item.id}"]`);
+        if (itemElement) {
+            const claimToggle = itemElement.querySelector('.claim-toggle');
+            const statusSpan = itemElement.querySelector('.product-status');
+            const nameInput = itemElement.querySelector('.claimer-name');
+            
+            // Only update if the takenBy status has changed
+            const currentTakenBy = nameInput ? nameInput.value : '';
+            if (item.takenBy !== currentTakenBy) {
+                updatedItems.add(item.id);
+                
+                // Update status
+                if (statusSpan) {
+                    statusSpan.textContent = item.takenBy ? 'Taken' : 'Available';
+                    statusSpan.classList.toggle('taken', !!item.takenBy);
+                    statusSpan.classList.toggle('available', !item.takenBy);
+                }
+                
+                if (claimToggle) {
+                    claimToggle.textContent = item.takenBy ? '已認領' : 'Available';
+                    claimToggle.setAttribute('disabled', !!item.takenBy);
+                }
+                
+                // Update or create claim fields
+                const claimActions = itemElement.querySelector('.claim-actions');
+                if (claimActions) {
+                    if (item.takenBy) {
+                        claimActions.innerHTML = `
+                            
+                            <div class="claim-fields visible">
+                                <input type="text" class="claimer-name" value="${item.takenBy}" readonly="true">
+                                <span class="claim-toggle" disabled="true">已認領</span>
+                            </div>
+                        `;
+                    } else {
+                        claimActions.innerHTML = `
+                            <div class="claim-fields visible">
+                                <input type="text" class="taken-by" placeholder="您的大名 💕">
+                                <button class="save-button" disabled>認領</button>
+                            </div>
+                        `;
+                        // Reattach event listeners for the new elements
+                        attachClaimListeners(itemElement, item.id);
+                    }
+                }
+            }
+        }
+    });
+    
+    // Log update summary
+    if (updatedItems.size > 0) {
+        console.log(`Updated ${updatedItems.size} items:`, Array.from(updatedItems));
+    }
+    
+    // Reapply filters after update
+    filterAndSearchItems();
+}
+
+// Helper function to attach claim listeners
+function attachClaimListeners(itemElement, itemId) {
+    const saveButton = itemElement.querySelector('.save-button');
+    if (saveButton) {
+        const nameInput = itemElement.querySelector('.taken-by');
+        
+        const updateSaveButtonState = () => {
+            const nameValue = nameInput.value.trim();
+            saveButton.disabled = !nameValue;
+        };
+
+        nameInput.addEventListener('input', updateSaveButtonState);
+        
+        saveButton.addEventListener('click', async () => {
+            const claimer = nameInput.value.trim();
+            if (claimer) {
+                try {
+                    saveButton.textContent = 'Saving...';
+                    saveButton.disabled = true;
+                    nameInput.disabled = true;
+
+                    await claimItem(itemId, claimer);
+                    
+                    saveButton.textContent = '已認領';
+                } catch (error) {
+                    saveButton.textContent = '認領';
+                    saveButton.disabled = false;
+                    nameInput.disabled = false;
+                    updateSaveButtonState();
+                }
+            }
+        });
+
+        updateSaveButtonState();
+    }
 }
 
 function attachControlListeners() {
@@ -416,7 +551,7 @@ async function start() {
     // Wait for configuration to load
     await loadConfig();
     
-    loadItemsAndClaims().then(() => {
+    loadItems().then(() => {
         // Initial state check after items are loaded and rendered
         console.log('initial state update');
         updateControlCheckboxesState();
