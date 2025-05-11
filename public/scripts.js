@@ -1,4 +1,5 @@
 import { Category, Subcategory, CATEGORY_TO_SUBCATEGORIES, CategoryZH, SubcategoryZH } from './types.js';
+import { initModal, showClaimSuccessModal } from './modal.js';
 
 function toggleItems(itemEle) {
     // Toggle the selected category header
@@ -288,6 +289,7 @@ async function loadItems() {
                     }
                 });
 
+                attachClaimListeners(itemDiv, itemId);
                 // Initial check
                 updateSaveButtonState();
             }
@@ -454,6 +456,7 @@ function attachClaimListeners(itemElement, itemId) {
     const saveButton = itemElement.querySelector('.save-button');
     if (saveButton) {
         const nameInput = itemElement.querySelector('.taken-by');
+        const itemStatus = itemElement.querySelector('.product-status');
         
         const updateSaveButtonState = () => {
             const nameValue = nameInput.value.trim();
@@ -473,6 +476,12 @@ function attachClaimListeners(itemElement, itemId) {
                     await claimItem(itemId, claimer);
                     
                     saveButton.textContent = '已認領';
+
+                    // Show success modal using the imported function
+                    showClaimSuccessModal();
+                    itemStatus.classList.remove('available');
+                    itemStatus.classList.add('taken');
+                    itemStatus.textContent = 'Taken';
                 } catch (error) {
                     saveButton.textContent = '認領';
                     saveButton.disabled = false;
@@ -551,6 +560,10 @@ async function start() {
     // Wait for configuration to load
     await loadConfig();
     
+    // Initialize modal
+    initModal();
+    
+    // Then load items
     loadItems().then(() => {
         // Initial state check after items are loaded and rendered
         console.log('initial state update');
