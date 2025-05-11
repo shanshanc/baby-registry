@@ -1,13 +1,12 @@
 # Baby Registry
 
-A simple baby registry web application built with Cloudflare Pages and KV storage.
+A simple baby registry web application built with Cloudflare Pages, KV storage, and durable objects.
 
 ## Features
 
 - Static website hosted on Cloudflare Pages
 - Serverless API endpoints using Cloudflare Pages Functions
-- KV storage for managing item claims
-- Real-time updates of claimed items
+- Real-time updates of claimed items via Cloudflare durable objects
 
 ## Project Structure
 
@@ -34,7 +33,7 @@ npm install
 
 2. Run locally:
 ```bash
-wrangler pages dev public --kv CLAIMS
+wrangler pages dev public --kv RATE_LIMIT
 ```
 
 3. Visit `http://localhost:8788` in your browser
@@ -46,18 +45,11 @@ The project is automatically deployed to Cloudflare Pages when changes are pushe
 ### KV Namespace Setup
 
 1. Create a KV namespace in Cloudflare Dashboard
-2. Add a KV namespace binding named `CLAIMS` in Pages > Settings > Bindings. Add
+2. Add a KV namespace binding named `RATE_LIMIT` in Pages > Settings > Bindings. Add
   - Type: KV namespace
-  - Name: CLAIMS
-  - Value: CLAIMS (Select from dropdown)
+  - Name: RATE_LIMIT
+  - Value: RATE_LIMIT (Select from dropdown)
 
 ## API Endpoints
 
-- `GET /api/claims` - Get all claimed items
-- `POST /api/claim` - Claim an item
-  ```json
-  {
-    "item": "item-id",
-    "claimer": "name"
-  }
-  ``` 
+- `GET /api/config` - Get all configs

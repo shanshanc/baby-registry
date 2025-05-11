@@ -11,8 +11,6 @@ const CONFIG = {
       items: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') 
             ? 'http://localhost:8787/items' 
             : '',
-      claims: '/api/claims',
-      claim: '/api/claim',
       config: '/api/config'
     }
   }
@@ -52,19 +50,10 @@ const MESSAGES = {
     rateLimit: {
       en: 'To ensure a fair experience for all users, we need to limit requests. Please wait 5 minutes before trying again.',
       zh: '抱歉，目前流量過大，請稍候5分鐘再試，謝謝您的體諒。'
-    },
-    claim: {
-      en: 'Failed to claim item. Please try again.',
-      zh: '認領失敗，請再試一次。'
-    },
-    emailRequired: {
-      en: 'Please provide your email address',
-      zh: '請提供您的電子郵件'
     }
   },
   placeholders: {
-    takenBy: 'Taken by / 認領者',
-    email: 'Your email / 電子郵件'
+    takenBy: 'Taken by / 認領者'
   },
   labels: {
     productLink: 'Product Link / 商品連結'

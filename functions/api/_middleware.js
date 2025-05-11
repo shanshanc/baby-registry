@@ -1,8 +1,4 @@
 import { corsHeaders, errorResponse, RateLimiter } from './utils';
-import { handleGetClaims, handlePostClaim } from './claims';
-import { handleGetItems } from './items';
-import { handleVerifyToken, handleResendVerification } from './verification';
-import { handleCreateVerification } from './verificationHandler';
 
 export async function onRequest(context) {
   const { request, env, next } = context;
@@ -23,12 +19,6 @@ export async function onRequest(context) {
   }
 
   try {
-    // Verify KV binding
-    if (!env.CLAIMS) {
-      console.error('[Error] CLAIMS binding not found in env');
-      return errorResponse('KV binding not configured', 500);
-    }
-
     // Check rate limit
     const rateLimiter = new RateLimiter(env);
     const clientIP = request.headers.get('cf-connecting-ip') || 'unknown';
@@ -61,28 +51,6 @@ export async function onRequest(context) {
           'Content-Type': 'application/json'
         }
       });
-    } else if (url.pathname === '/api/items' && request.method === 'GET') {
-      return handleGetItems(env);
-    } else if (url.pathname === '/api/claims' && request.method === 'GET') {
-      // List all keys in CLAIMS namespace for debugging
-      const claims = await env.CLAIMS.list();
-      console.log('[Debug] All keys in CLAIMS namespace:', claims.keys.map(k => k.name));
-      return handleGetClaims(env);
-    } else if (url.pathname === '/api/claim' && request.method === 'POST') {
-      return handlePostClaim(request, env);
-    } else if (url.pathname === '/api/verify/create' && request.method === 'POST') {
-      return handleCreateVerification(request, env);
-    } else if (url.pathname === '/api/verify/token' && request.method === 'POST') {
-      return handleVerifyToken(request, env);
-    } else if (url.pathname === '/api/verify/resend' && request.method === 'POST') {
-      return handleResendVerification(request, env);
-    } else if (url.pathname === '/api/verify' && request.method === 'GET') {
-      // Handle verification page requests
-      const token = url.searchParams.get('token');
-      if (!token) {
-        return errorResponse('Token is required', 400);
-      }
-      return handleVerifyToken(request, env);
     }
 
     // If no route matches, return 404

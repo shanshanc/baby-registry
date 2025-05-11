@@ -5,17 +5,6 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-// Email masking utility
-export function maskEmail(email) {
-  if (!email) return '';
-  const [localPart, domain] = email.split('@');
-  if (!domain) return email;
-  const maskedLocal = localPart.length > 2 
-    ? `${localPart.slice(0, 2)}${'*'.repeat(localPart.length - 2)}`
-    : localPart;
-  return `${maskedLocal}@${domain}`;
-}
-
 // ID generation utility
 export function generateId(itemName) {
   return itemName.toLowerCase()

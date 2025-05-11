@@ -28,14 +28,14 @@ async function claimItem(itemId, claimer) {
         
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || MESSAGES.errors.claim.en);
+            throw new Error(errorData.error || 'Failed to claim item');
         }
         
-        const result = await response.json();
-        return result;
+        return await response.json();
     } catch (error) {
         console.error('Error claiming item:', error);
-        alert(MESSAGES.errors.claim.en);
+        alert('Failed to claim item. Please try again.');
+        throw error;
     }
 }
 
