@@ -7,74 +7,75 @@
     <link rel="icon" href="img/heart.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap">
     <script src="js/constants.js" type="module"></script>
     <script src="js/scripts.js" type="module" defer></script>
 </head>
 <body>
     <div class="container">
-        <h1>Baby Registry</h1>
-        <h3 class="address">寄送地址: 新北市新店區碧潭和美山登山步道旁 <i class="fa-solid fa-baby-carriage"></i></h3>
-        <div class="registry-wrapper">
-          <div class="sidebar">
-            <div class="controls">
-                <div class="control-checkboxes">
-                    <label>
-                        <input type="checkbox" id="expand-all"> 展開全部
-                    </label>
-                    <label>
-                        <input type="checkbox" id="collapse-all"> 收起全部
-                    </label>
-                </div>
-            </div>
-            <div class="filter-search-controls">
-                <div class="filter-controls">
-                    <div class="filter-controls-label">篩選認領狀態</div>
-                    <div class="filter-controls-radio">
-                        <label>
-                            <input type="radio" name="status-filter" value="all" checked> All
-                        </label>
-                        <label>
-                            <input type="radio" name="status-filter" value="available"> Available
-                        </label>
-                        <label>
-                            <input type="radio" name="status-filter" value="taken"> Taken
-                        </label>
-                    </div>
-                </div>
-                <div class="search-control">
-                    <div class="search-control-label">搜尋產品</div>
-                    <div class="search-input-container">
-                        <input type="text" id="search-input" placeholder="Search items...">
-                        <button type="button" id="search-clear-btn" class="search-clear-btn" aria-label="Clear search">×</button>
-                    </div>
-                </div>
-            </div>
-            <div class="categories" id="category-container"></div>
-          </div>
-          <div class="content" id="items-container" data-loading="true">
-            <div class="loading-skeleton">
-              <div class="skeleton-category">
-                <div class="skeleton-subcategory"></div>
-                <div class="skeleton-items">
-                  <div class="skeleton-item"></div>
-                  <div class="skeleton-item"></div>
-                  <div class="skeleton-item"></div>
-                </div>
+      <h1 class="title">Baby Registry</h1>
+      <h3 class="address">寄送地址: 新北市新店區碧潭和美山登山步道旁 <i class="fa-solid fa-baby-carriage"></i></h3>
+      <div class="registry-wrapper">
+        <div class="sidebar">
+          <div class="controls">
+              <div class="control-checkboxes">
+                  <label>
+                      <input type="checkbox" id="expand-all"> 展開全部
+                  </label>
+                  <label>
+                      <input type="checkbox" id="collapse-all"> 收起全部
+                  </label>
               </div>
-              <div class="skeleton-category">
-                <div class="skeleton-subcategory"></div>
-                <div class="skeleton-items">
-                  <div class="skeleton-item"></div>
-                  <div class="skeleton-item"></div>
-                </div>
+          </div>
+          <div class="filter-search-controls">
+              <div class="filter-controls">
+                  <div class="filter-controls-label">篩選認領狀態</div>
+                  <div class="filter-controls-radio">
+                      <label>
+                          <input type="radio" name="status-filter" value="all" checked> All
+                      </label>
+                      <label>
+                          <input type="radio" name="status-filter" value="available"> Available
+                      </label>
+                      <label>
+                          <input type="radio" name="status-filter" value="taken"> Taken
+                      </label>
+                  </div>
+              </div>
+              <div class="search-control">
+                  <div class="search-control-label">搜尋產品</div>
+                  <div class="search-input-container">
+                      <input type="text" id="search-input" placeholder="Search items...">
+                      <button type="button" id="search-clear-btn" class="search-clear-btn" aria-label="Clear search">×</button>
+                  </div>
+              </div>
+          </div>
+          <div class="categories" id="category-container"></div>
+        </div>
+        <div class="content" id="items-container" data-loading="true">
+          <div class="loading-skeleton">
+            <div class="skeleton-category">
+              <div class="skeleton-subcategory"></div>
+              <div class="skeleton-items">
+                <div class="skeleton-item"></div>
+                <div class="skeleton-item"></div>
+                <div class="skeleton-item"></div>
+              </div>
+            </div>
+            <div class="skeleton-category">
+              <div class="skeleton-subcategory"></div>
+              <div class="skeleton-items">
+                <div class="skeleton-item"></div>
+                <div class="skeleton-item"></div>
               </div>
             </div>
           </div>
         </div>
-        <footer class="footer">
-            <p>&copy; 2025 Daphne & Hsin</p>
-            <p><a href="mailto:service@daphne-hsin-baby-registry.me">service@daphne-hsin-baby-registry.me</a></p>
-        </footer>
+      </div>
+      <footer class="footer">
+          <p>&copy; 2025 Daphne & Hsin</p>
+          <p><a href="mailto:service@daphne-hsin-baby-registry.me">service@daphne-hsin-baby-registry.me</a></p>
+      </footer>
     </div>
 
     <!-- Modal -->
