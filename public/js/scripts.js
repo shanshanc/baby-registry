@@ -1,10 +1,11 @@
-import { CONFIG, MESSAGES } from './constants.js';
+import { CONFIG, MESSAGES, DEBUG_MODE } from './constants.js';
 import { loadConfig } from './util.js';
 import { initModal } from './modal.js';
 import { initFilters, filterAndSearchItems, updateControlCheckboxesState } from './filter.js';
 import { initCategories } from './category.js';
 import { renderItems } from './item.js';
 import ItemManager from './itemManager.js';
+import { initLazyLoading, addLazyImageStyles, testFallbacks } from './imageOptimizer.js';
 
 function toggleItems(itemEle) {
     // Toggle the selected category header
@@ -54,6 +55,8 @@ function updateUIWithItems(items) {
     // Log update summary
     if (updatedItems.size > 0) {
         console.log(`Updated ${updatedItems.size} items:`, Array.from(updatedItems));
+        // Re-initialize lazy loading after updating items
+        initLazyLoading();
     }
     
     // Reapply filters after update
@@ -263,8 +266,30 @@ async function start() {
     initCategories(); 
     attachEventListeners();
     
+    // Add lazy image styles before loading items
+    addLazyImageStyles();
+    
+    // Expose testing functions to global scope, but only in debug mode
+    if (DEBUG_MODE) {
+        window.testImageFallbacks = testFallbacks;
+        
+        // Add helper to simulate a blocked image 
+        window.simulateImageError = function(selector = '.item-image') {
+            const images = document.querySelectorAll(selector);
+            images.forEach(img => {
+                // Trigger the error handler manually
+                img.dispatchEvent(new Event('error'));
+                console.log('Simulated error for:', img);
+            });
+            return `Simulated errors for ${images.length} images`;
+        };
+    }
+    
     // Then load items and render them into the initialized structure
     loadItems().then(() => {
+        // Initialize lazy loading for images
+        initLazyLoading();
+        
         // Initial state check after items are loaded and rendered
         console.log('initial state update after items loaded');
         updateControlCheckboxesState();

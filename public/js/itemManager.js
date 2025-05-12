@@ -1,6 +1,7 @@
 import { ClaimText } from './types.js';
 import { showClaimSuccessModal } from './modal.js';
 import { sanitizeInput } from './util.js';
+import { createOptimizedImage } from './imageOptimizer.js';
 
 // ItemManager module to encapsulate all item-related functionality
 const ItemManager = {
@@ -127,7 +128,24 @@ const ItemManager = {
         // Check if taken status changed
         const currentTakenBy = nameInput ? nameInput.value : '';
         if (item.takenBy === currentTakenBy) {
-            return false; // No change needed
+            // Also check if image URL has changed
+            const currentImage = itemElement.querySelector('.item-image');
+            const currentImageSrc = currentImage ? currentImage.dataset.src : '';
+            
+            if (currentImageSrc === item.imageUrl) {
+                return false; // No change needed
+            }
+            
+            // If only the image changed, update just the image
+            if (currentImage && item.imageUrl && currentImageSrc !== item.imageUrl) {
+                const productName = item.product.toLowerCase().replace(/ /g, '-');
+                const imageContainer = currentImage.parentElement;
+                if (imageContainer) {
+                    imageContainer.removeChild(currentImage);
+                    imageContainer.insertAdjacentHTML('afterbegin', createOptimizedImage(item.imageUrl, productName, "item-image"));
+                    return true;
+                }
+            }
         }
         
         // Update item status display

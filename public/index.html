@@ -12,6 +12,23 @@
     <link rel="preload" href="js/constants.js" as="script">
     <link rel="preload" href="js/scripts.js" as="script">
     <link rel="preload" href="styles.css" as="style">
+    <!-- Debug utilities - loaded based on environment -->
+    <script>
+        // Only load debug tools in development or when explicitly requested
+        if (
+            window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' || 
+            window.location.hostname.includes('.local') ||
+            window.location.hostname.includes('staging') ||
+            window.location.protocol === 'file:' ||
+            window.location.search.includes('debug=true')
+        ) {
+            const debugScript = document.createElement('script');
+            debugScript.src = 'js/debug.js';
+            document.head.appendChild(debugScript);
+            console.log('Debug mode detected, loading debug tools');
+        }
+    </script>
     <!-- Defer non-critical scripts -->
     <script src="js/constants.js" type="module"></script>
     <script src="js/scripts.js" type="module" defer></script>
@@ -92,7 +109,7 @@
         </div>
       </div>
       <footer class="footer">
-          <p>&copy; 2025 Daphne & Hsin</p>
+          <p>&copy; 2025 Daphne &amp; Hsin</p>
           <p><a href="mailto:service@daphne-hsin-baby-registry.me">service@daphne-hsin-baby-registry.me</a></p>
       </footer>
     </div>

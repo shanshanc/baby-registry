@@ -572,6 +572,39 @@ body {
     color: var(--secondary-color);
 }
 
+/* Image optimization styles */
+.lazy-image {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  background-color: #f0f0f0;
+  min-height: 50px;
+}
+
+img:not(.lazy-image) {
+  opacity: 1;
+}
+
+.item-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+  width: 150px;
+  height: 150px;
+}
+
+.donate-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Fallback styling */
+img[src^="data:image/svg"] {
+  background-color: #f0f0f0;
+  border: 1px dashed #ddd;
+}
+
 @media (max-width: 768px) {
   .title {
     font-size: 3em;
