@@ -1,4 +1,6 @@
-import { initModal, showClaimSuccessModal } from './modal.js';
+import { CONFIG, MESSAGES } from './constants.js';
+import { loadConfig } from './util.js';
+import { initModal } from './modal.js';
 import { initFilters, filterAndSearchItems, updateControlCheckboxesState } from './filter.js';
 import { initCategories } from './category.js';
 import { renderItems } from './item.js';
@@ -62,6 +64,9 @@ async function loadItems() {
     const itemsContainer = document.getElementById('items-container');
     
     try {
+        // Set loading state
+        itemsContainer.dataset.loading = 'true';
+        
         // Fetch items from Durable Object
         const itemsPromise = fetch(CONFIG.api.endpoints.items)
             .then(response => {
@@ -87,10 +92,12 @@ async function loadItems() {
             if (itemElement) {
                 ItemManager.attachClaimListeners(itemElement, itemData.id);
             } else {
-                // This might happen if createItemHTML doesn't create a .item or data-item for every item, or if an item in data is not rendered.
                 console.warn(`Item element not found for item ID ${itemData.id} after renderItems. Cannot attach claim listeners.`);
             }
         });
+        
+        // Remove loading state
+        itemsContainer.dataset.loading = 'false';
         
         // Set up periodic refresh
         setInterval(async () => {
@@ -104,6 +111,9 @@ async function loadItems() {
         }, CONFIG.refreshInterval);
         
     } catch (error) {
+        // Remove loading state on error
+        itemsContainer.dataset.loading = 'false';
+        
         console.error('Error loading registry:', error);
         let errorMessage = MESSAGES.errors.generic;
         

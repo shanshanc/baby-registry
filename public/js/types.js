@@ -39,6 +39,8 @@ export const SubcategoryZH = {
   [Subcategory.BabyCare]: "嬰兒護理",
   [Subcategory.Travel]: "外出用品",
   [Subcategory.Clothing]: "童裝",
+  [Subcategory.Toy]: "玩具",
+  [Subcategory.Mom]: "媽媽用品",
   [Subcategory.DonateQRCode]: "掃描QR碼贊助"
 };
 
@@ -47,6 +49,8 @@ export const CATEGORY_TO_SUBCATEGORIES = {
   [Category.Feeding]: [Subcategory.Breastfeeding, Subcategory.Bottlefeeding],
   [Category.Essential]: [Subcategory.BabyCare, Subcategory.Bathing, Subcategory.Clothing],
   [Category.Gear]: [Subcategory.Travel],
+  [Category.Toy]: [Subcategory.Toy],
+  [Category.Mom]: [Subcategory.Mom],
   [Category.Donate]: [Subcategory.DonateQRCode]
 };
 

@@ -1,5 +1,5 @@
 // Default configuration that will be overridden by API values
-const CONFIG = {
+export const CONFIG = {
   // Refresh interval in milliseconds
   // Considerations:
   // - Too frequent (e.g., 3s): High load on Durable Object, unnecessary updates
@@ -16,32 +16,7 @@ const CONFIG = {
   }
 };
 
-// Fetch configuration from API
-async function loadConfig() {
-  try {
-    const response = await fetch(CONFIG.api.endpoints.config);
-    if (response.ok) {
-      const config = await response.json();
-      // Update CONFIG with values from API
-      if (config.itemsEndpoint) {
-        CONFIG.api.endpoints.items = config.itemsEndpoint;
-      }
-      if (config.refreshInterval) {
-        CONFIG.refreshInterval = config.refreshInterval;
-      }
-      console.log('Configuration loaded from API:', CONFIG);
-    } else {
-      console.warn('Failed to load configuration from API, using defaults');
-    }
-  } catch (error) {
-    console.error('Error loading configuration:', error);
-  }
-}
-
-// Load configuration when the script runs
-loadConfig();
-
-const MESSAGES = {
+export const MESSAGES = {
   errors: {
     generic: {
       en: 'Error loading registry. Please refresh the page.',
@@ -88,4 +63,6 @@ function setLanguage(lang) {
 function getMessage(messageObj) {
   const currentLang = getCurrentLanguage();
   return messageObj[currentLang] || messageObj[CONFIG.defaultLanguage];
-} 
+}
+
+export const DONATE_QR_FALLBACK = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPwAAAD+CAYAAAAeY2hsAAAMTmlDQ1BJQ0MgUHJvZmlsZQAASImVVwdYU8kWnltSIQQIREBK6E0QkRJASggtgPQuKiEJEEqMCUHFjiyu4NpFBMuKroIoWFZAFhvqqiuLYu+LBRVlXVwXu/ImBNBlX/nefN/c+e8/Z/4559y5d+4AQO/iS6W5qCYAeZJ8WUywPyspOYVF6gEo0AUkYAwQvkAu5URFhQNYhtu/l9fXAKJsLzsotf7Z/1+LllAkFwCAREGcLpQL8iD+EQC8VSCV5QNAlELefFa+VInXQawjgw5CXKPEmSrcqsTpKnxx0CYuhgvxIwDI6ny+LBMAjT7IswoEmVCHDqMFThKhWAKxH8Q+eXkzhBAvgtgG2sA56Up9dvpXOpl/00wf0eTzM0ewKpbBQg4Qy6W5/Dn/Zzr+d8nLVQzPYQ2repYsJEYZM8zbo5wZYUqsDvFbSXpEJMTaAKC4WDhor8TMLEVIvMoetRHIuTBngAnxJHluLG+IjxHyA"; 

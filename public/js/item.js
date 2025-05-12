@@ -1,4 +1,5 @@
-import { Category, Subcategory, CATEGORY_TO_SUBCATEGORIES, CategoryZH, SubcategoryZH, ClaimText } from './types.js';
+import { Category, CATEGORY_TO_SUBCATEGORIES, ClaimText } from './types.js';
+import { DONATE_QR_FALLBACK } from './constants.js';
 
 function createItemHTML(item) {
     const productName = item.product.toLowerCase().replace(/ /g, '-');
@@ -8,7 +9,7 @@ function createItemHTML(item) {
             <div class="item" data-item="${item.id}">
                 <div class="item-content donate-info">
                     <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
-                    ${item.imageUrl ? `<img src="${item.imageUrl}" alt="Donate QR Code" class="donate-image">` : ''}
+                    <img src="${item.imageUrl || DONATE_QR_FALLBACK}" alt="Donate QR Code" class="donate-image">
                 </div>
             </div>
         `;
@@ -85,9 +86,15 @@ function renderItems(items) {
     });
     
     // Now render items into their containers
+    const itemsDisplayWrapper = document.getElementById('items-display-wrapper');
+    if (!itemsDisplayWrapper) {
+        console.error('Items display wrapper not found');
+        return groupedItems;
+    }
+
     Object.entries(groupedItems).forEach(([categoryName, subcategories]) => {
         Object.entries(subcategories).forEach(([subcategoryName, itemList]) => {
-            const itemsListContainer = document.querySelector(`.items-list[data-category-name="${categoryName}"][data-subcategory-name="${subcategoryName}"]`);
+            const itemsListContainer = itemsDisplayWrapper.querySelector(`.items-list[data-category-name="${categoryName}"][data-subcategory-name="${subcategoryName}"]`);
             
             if (itemsListContainer) {
                 if (itemList.length > 0) {

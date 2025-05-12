@@ -22,7 +22,7 @@ function createCategoryHTMLStructure(firstCategoryShouldBeActive = false) {
         if (predefinedSubcats && predefinedSubcats.length > 0) {
             predefinedSubcats.forEach(subcatName => {
                 subcategoriesRenderedHTML += `
-                    <div class="subcategory sub-${subcatName.toLowerCase().replace(/[^a-z0-9]/g, '-')}">
+                    <div class="subcategory sub-${subcatName}">
                         <h3>${SubcategoryZH[subcatName] ? SubcategoryZH[subcatName] : subcatName}</h3>
                     </div>
                     <div class="items-list" data-category-name="${categoryName}" data-subcategory-name="${subcatName}">
@@ -64,8 +64,19 @@ function initCategories() {
     const { categoryHeadersHTML, itemsDisplayHTML } = createCategoryHTMLStructure(true); // true to make the first category active
 
     categoryContainer.innerHTML = categoryHeadersHTML;
-    itemsContainer.innerHTML = itemsDisplayHTML;
-    // Event listeners for category toggling will be attached in scripts.js
+    
+    // Create a wrapper div for the items display content
+    const itemsDisplayWrapper = document.createElement('div');
+    itemsDisplayWrapper.id = 'items-display-wrapper';
+    itemsDisplayWrapper.innerHTML = itemsDisplayHTML;
+    
+    // Clear the items container but preserve the loading skeleton
+    const loadingSkeleton = itemsContainer.querySelector('.loading-skeleton');
+    itemsContainer.innerHTML = '';
+    if (loadingSkeleton) {
+        itemsContainer.appendChild(loadingSkeleton);
+    }
+    itemsContainer.appendChild(itemsDisplayWrapper);
 }
 
 export { initCategories };
