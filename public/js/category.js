@@ -134,12 +134,7 @@ function initCategories() {
     itemsDisplayWrapper.id = 'items-display-wrapper';
     itemsDisplayWrapper.innerHTML = itemsDisplayHTML;
     
-    // Clear the items container but preserve the loading skeleton
-    const loadingSkeleton = itemsContainer.querySelector('.loading-skeleton');
-    itemsContainer.innerHTML = '';
-    if (loadingSkeleton) {
-        itemsContainer.appendChild(loadingSkeleton);
-    }
+    // Append the wrapper to container, which has loading skeleton already in the HTML
     itemsContainer.appendChild(itemsDisplayWrapper);
 
     // Initialize mobile dropdown functionality

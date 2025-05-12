@@ -1,8 +1,22 @@
 // Add filter and search state
 let currentFilter = 'all';
 let currentSearch = '';
+let searchDebounceTimer = null;
+const DEBOUNCE_DELAY = 300; // 300ms delay
 
 import { sanitizeInput } from './util.js';
+
+// Debounce function to limit how often a function is called
+function debounce(func, delay) {
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            func.apply(context, args);
+        }, delay);
+    };
+}
 
 // Function to update the expand/collapse all checkbox states based on current category states
 function updateControlCheckboxesState() {
@@ -78,10 +92,10 @@ function filterAndSearchItems() {
 function attachFilterListeners() {
     const filterInputs = document.querySelectorAll('input[name="status-filter"]');
     filterInputs.forEach(input => {
-        input.addEventListener('change', (e) => {
+        input.addEventListener('change', debounce((e) => {
             currentFilter = e.target.value;
             filterAndSearchItems();
-        });
+        }, DEBOUNCE_DELAY));
     });
 }
 
@@ -90,8 +104,8 @@ function attachSearchListener() {
     const clearBtn = document.getElementById('search-clear-btn');
     
     if (searchInput) {
-        // Input event listener
-        searchInput.addEventListener('input', (e) => {
+        // Input event listener with debouncing
+        searchInput.addEventListener('input', debounce((e) => {
             // Sanitize the search input
             currentSearch = sanitizeInput(e.target.value.trim());
             filterAndSearchItems();
@@ -102,7 +116,7 @@ function attachSearchListener() {
             } else {
                 clearBtn.classList.remove('visible');
             }
-        });
+        }, DEBOUNCE_DELAY));
         
         // Clear button click handler
         if (clearBtn) {
