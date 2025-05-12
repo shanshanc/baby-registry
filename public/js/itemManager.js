@@ -1,5 +1,6 @@
 import { ClaimText } from './types.js';
 import { showClaimSuccessModal } from './modal.js';
+import { sanitizeInput } from './util.js';
 
 // ItemManager module to encapsulate all item-related functionality
 const ItemManager = {
@@ -48,7 +49,7 @@ const ItemManager = {
         if (item.takenBy) {
             // Item is claimed - update to show claimed state
             claimFields.innerHTML = `
-                <input type="text" class="claimer-name" value="${item.takenBy}" readonly="true">
+                <input type="text" class="claimer-name" value="${sanitizeInput(item.takenBy)}" readonly="true">
                 <span class="claimed-badge">${ClaimText.CLAIMED}</span>
             `;
         } else {
@@ -95,7 +96,9 @@ const ItemManager = {
                         saveButton.disabled = true;
                         nameInput.disabled = true;
 
-                        await this.claimItem(itemId, claimer);
+                        // Sanitize input before sending to server
+                        const sanitizedClaimer = sanitizeInput(claimer);
+                        await this.claimItem(itemId, sanitizedClaimer);
                         
                         // Update save button state to claimed
                         this.updateSaveButtonState(saveButton, nameInput, true);

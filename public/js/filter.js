@@ -2,6 +2,8 @@
 let currentFilter = 'all';
 let currentSearch = '';
 
+import { sanitizeInput } from './util.js';
+
 // Function to update the expand/collapse all checkbox states based on current category states
 function updateControlCheckboxesState() {
     const categoryItems = document.querySelectorAll('.category-items');
@@ -44,8 +46,11 @@ function filterAndSearchItems() {
             (currentFilter === 'available' && status?.classList.contains('available')) ||
             (currentFilter === 'taken' && status?.classList.contains('taken'));
             
-        const matchesSearch = !currentSearch || 
-            productData.includes(currentSearch.toLowerCase());
+        // Make sure sanitized search term matches sanitized product data
+        const sanitizedSearch = currentSearch.toLowerCase();
+        const sanitizedProductData = productData.toLowerCase();
+        const matchesSearch = !sanitizedSearch || 
+            sanitizedProductData.includes(sanitizedSearch);
             
         const isVisible = matchesFilter && matchesSearch;
         item.style.display = isVisible ? '' : 'none';
@@ -87,7 +92,8 @@ function attachSearchListener() {
     if (searchInput) {
         // Input event listener
         searchInput.addEventListener('input', (e) => {
-            currentSearch = e.target.value.trim();
+            // Sanitize the search input
+            currentSearch = sanitizeInput(e.target.value.trim());
             filterAndSearchItems();
             
             // Show/hide clear button based on search content

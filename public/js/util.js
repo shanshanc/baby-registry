@@ -22,3 +22,17 @@ export async function loadConfig() {
     console.error('Error loading configuration:', error);
   }
 }
+
+// Sanitize user input to prevent XSS attacks
+export function sanitizeInput(input) {
+    if (!input) return '';
+    const str = String(input);
+    
+    // Replace HTML special characters with their entity equivalents
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
