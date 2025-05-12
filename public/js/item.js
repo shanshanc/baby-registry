@@ -101,19 +101,40 @@ function renderItems(items) {
             const itemsListContainer = itemsDisplayWrapper.querySelector(`.items-list[data-category-name="${categoryName}"][data-subcategory-name="${subcategoryName}"]`);
             
             if (itemsListContainer) {
+                // Find the related subcategory header
+                const subcategoryHeader = itemsListContainer.previousElementSibling;
+                
                 if (itemList.length > 0) {
+                    // Show the subcategory header if it exists and has items
+                    if (subcategoryHeader && subcategoryHeader.classList.contains('subcategory')) {
+                        subcategoryHeader.style.display = '';
+                    }
+                    
                     let itemsHTML = '';
                     itemList.forEach(item => {
                         itemsHTML += createItemHTML(item);
                     });
                     itemsListContainer.innerHTML = itemsHTML;
+                    itemsListContainer.style.display = ''; // Show the items container
                 } else {
-                    // No items for this subcategory - show a message
+                    // No items for this subcategory - hide the header and container
+                    if (subcategoryHeader && subcategoryHeader.classList.contains('subcategory')) {
+                        subcategoryHeader.style.display = 'none';
+                    }
+                    
+                    // If it's a default subcategory for a category without defined subcategories,
+                    // we'll show the no-items message instead of hiding entirely
                     const isDefaultSubcategory = subcategoryName === 'default';
                     const hasNoDefinedSubcategories = !(CATEGORY_TO_SUBCATEGORIES[categoryName] && CATEGORY_TO_SUBCATEGORIES[categoryName].length > 0);
-                    const containerType = isDefaultSubcategory && hasNoDefinedSubcategories ? 'category' : 'subcategory';
                     
-                    itemsListContainer.innerHTML = `<p class="no-items-message">No items in this ${containerType} yet.</p>`;
+                    if (isDefaultSubcategory && hasNoDefinedSubcategories) {
+                        const containerType = 'category';
+                        itemsListContainer.innerHTML = `<p class="no-items-message">No items in this ${containerType} yet.</p>`;
+                        itemsListContainer.style.display = ''; // Show the container to display the message
+                    } else {
+                        // Hide the items container for an empty subcategory
+                        itemsListContainer.style.display = 'none';
+                    }
                 }
             } else {
                 console.warn(`Items list container not found for category '${categoryName}' and subcategory '${subcategoryName}'`);

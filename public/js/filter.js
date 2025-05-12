@@ -52,6 +52,10 @@ function filterAndSearchItems() {
     const items = document.querySelectorAll('.item');
     const categories = document.querySelectorAll('.category-items');
     
+    // Track items visibility by subcategory
+    const subcategoryVisibility = {};
+    
+    // First pass: determine visibility of each item and track which subcategories have visible items
     items.forEach(item => {
         const status = item.querySelector('.product-status');
         const productData = item.querySelector('.item-content')?.dataset.product || '';
@@ -68,6 +72,60 @@ function filterAndSearchItems() {
             
         const isVisible = matchesFilter && matchesSearch;
         item.style.display = isVisible ? '' : 'none';
+        
+        // Track which item container this belongs to for subcategory visibility
+        const itemsListContainer = item.closest('.items-list');
+        if (itemsListContainer) {
+            const categoryName = itemsListContainer.dataset.categoryName;
+            const subcategoryName = itemsListContainer.dataset.subcategoryName;
+            
+            if (!subcategoryVisibility[categoryName]) {
+                subcategoryVisibility[categoryName] = {};
+            }
+            
+            if (!subcategoryVisibility[categoryName][subcategoryName]) {
+                subcategoryVisibility[categoryName][subcategoryName] = { 
+                    visibleItems: 0, 
+                    container: itemsListContainer 
+                };
+            }
+            
+            if (isVisible) {
+                subcategoryVisibility[categoryName][subcategoryName].visibleItems++;
+            }
+        }
+    });
+    
+    // Second pass: handle subcategory visibility
+    Object.entries(subcategoryVisibility).forEach(([categoryName, subcategories]) => {
+        Object.entries(subcategories).forEach(([subcategoryName, data]) => {
+            const { visibleItems, container } = data;
+            const subcategoryHeader = container.previousElementSibling;
+            
+            // Check if this is a default container for a category with no predefined subcategories
+            const isDefaultSubcategory = subcategoryName === 'default';
+            
+            if (visibleItems === 0) {
+                // Hide subcategory if it's not a default container
+                if (subcategoryHeader && subcategoryHeader.classList.contains('subcategory')) {
+                    subcategoryHeader.style.display = 'none';
+                }
+                
+                // Hide the container itself if not a default container
+                if (!isDefaultSubcategory) {
+                    container.style.display = 'none';
+                } else {
+                    // Use default display value (to show container) even though it's empty (after filtering/searching)
+                    container.style.display = '';
+                }
+            } else {
+                // Show subcategory header and container if there are visible items
+                if (subcategoryHeader && subcategoryHeader.classList.contains('subcategory')) {
+                    subcategoryHeader.style.display = '';
+                }
+                container.style.display = '';
+            }
+        });
     });
     
     // Keep categories visible but update their content visibility
