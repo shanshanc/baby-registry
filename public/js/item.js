@@ -9,7 +9,7 @@ function createItemHTML(item) {
             <div class="item" data-item="${item.id}">
                 <div class="item-content donate-info">
                     <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
-                    <img src="${item.imageUrl || DONATE_QR_FALLBACK}" alt="Donate QR Code" class="donate-image">
+                    <img class="donate-qr-code" src="${item.imageUrl || DONATE_QR_FALLBACK}" alt="Donate QR Code" class="donate-image">
                 </div>
             </div>
         `;

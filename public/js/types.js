@@ -28,6 +28,8 @@ export const Subcategory = {
   BabyCare: "BabyCare",
   Travel: "Travel",
   Clothing: "Clothing",
+  Toy: "Toy",
+  Mom: "Mom",
   DonateQRCode: "DonateQRCode"
 };
 
