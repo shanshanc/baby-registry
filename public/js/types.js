@@ -30,7 +30,8 @@ export const Subcategory = {
   Clothing: "Clothing",
   Toy: "Toy",
   Mom: "Mom",
-  DonateQRCode: "DonateQRCode"
+  DonateQRCode: "DonateQRCode",
+  None: "None"
 };
 
 // Subcategory Mandarin translations
@@ -43,16 +44,17 @@ export const SubcategoryZH = {
   [Subcategory.Clothing]: "童裝",
   [Subcategory.Toy]: "玩具",
   [Subcategory.Mom]: "媽媽用品",
-  [Subcategory.DonateQRCode]: "掃描QR碼贊助"
+  [Subcategory.DonateQRCode]: "掃描QR碼贊助",
+  [Subcategory.None]: "一般"
 };
 
 // Mapping from category to subcategories
 export const CATEGORY_TO_SUBCATEGORIES = {
-  [Category.Feeding]: [Subcategory.Breastfeeding, Subcategory.Bottlefeeding],
-  [Category.Essential]: [Subcategory.BabyCare, Subcategory.Bathing, Subcategory.Clothing],
-  [Category.Gear]: [Subcategory.Travel],
-  [Category.Toy]: [Subcategory.Toy],
-  [Category.Mom]: [Subcategory.Mom],
+  [Category.Feeding]: [Subcategory.None, Subcategory.Breastfeeding, Subcategory.Bottlefeeding],
+  [Category.Essential]: [Subcategory.None, Subcategory.BabyCare, Subcategory.Bathing, Subcategory.Clothing],
+  [Category.Gear]: [Subcategory.None, Subcategory.Travel],
+  [Category.Toy]: [Subcategory.None, Subcategory.Toy],
+  [Category.Mom]: [Subcategory.None, Subcategory.Mom],
   [Category.Donate]: [Subcategory.DonateQRCode]
 };
 

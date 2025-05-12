@@ -596,6 +596,7 @@ body {
   }
   .item-details {
     min-height: initial;
+    width: 100%;
   }
   
   .item-image {

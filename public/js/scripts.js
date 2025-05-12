@@ -67,19 +67,39 @@ async function loadItems() {
         // Set loading state
         itemsContainer.dataset.loading = 'true';
         
-        // Fetch items from Durable Object
-        const itemsPromise = fetch(CONFIG.api.endpoints.items)
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || MESSAGES.errors.generic.en);
-                    });
-                }
-                return response.json();
-            });
+        // Try to get cached items first
+        const cachedItems = localStorage.getItem('cachedItems');
+        const cacheTimestamp = localStorage.getItem('cacheTimestamp');
+        const now = Date.now();
+        
+        // Use cache if it's less than 5 minutes old
+        if (cachedItems && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 300000) {
+            const items = JSON.parse(cachedItems);
+            renderItems(items);
+            itemsContainer.dataset.loading = 'false';
+        }
+        
+        // Fetch items from Durable Object - now with cache headers
+        const itemsPromise = fetch(CONFIG.api.endpoints.items, {
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        }).then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || MESSAGES.errors.generic.en);
+                });
+            }
+            return response.json();
+        });
         
         // Wait for items to resolve
         const items = await itemsPromise;
+        
+        // Update cache
+        localStorage.setItem('cachedItems', JSON.stringify(items));
+        localStorage.setItem('cacheTimestamp', now.toString());
         
         // Store initial items state for comparison
         window.lastItemsState = JSON.stringify(items);
@@ -99,16 +119,43 @@ async function loadItems() {
         // Remove loading state
         itemsContainer.dataset.loading = 'false';
         
-        // Set up periodic refresh
-        setInterval(async () => {
+        // Set up periodic refresh with exponential backoff
+        let retryCount = 0;
+        const maxRetryCount = 5;
+        const baseInterval = CONFIG.refreshInterval;
+        
+        const refreshItems = async () => {
             try {
-                const updatedItems = await fetch(CONFIG.api.endpoints.items).then(r => r.json());
-                console.log('updatedItems', updatedItems);
+                // Now with proper cache headers
+                const updatedItems = await fetch(CONFIG.api.endpoints.items, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                }).then(r => r.json());
+                
+                // Reset retry count on successful fetch
+                retryCount = 0;
+                
+                // Update cache
+                localStorage.setItem('cachedItems', JSON.stringify(updatedItems));
+                localStorage.setItem('cacheTimestamp', Date.now().toString());
+                
                 updateUIWithItems(updatedItems);
             } catch (error) {
                 console.error('Error refreshing items:', error);
+                retryCount++;
+                
+                // Implement exponential backoff
+                if (retryCount < maxRetryCount) {
+                    const backoffDelay = baseInterval * Math.pow(2, retryCount);
+                    setTimeout(refreshItems, backoffDelay);
+                }
             }
-        }, CONFIG.refreshInterval);
+        };
+        
+        // Start periodic refresh
+        setInterval(refreshItems, baseInterval);
         
     } catch (error) {
         // Remove loading state on error

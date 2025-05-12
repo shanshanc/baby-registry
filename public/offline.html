@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Baby Registry</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .offline-container {
+            text-align: center;
+            padding: 40px;
+        }
+        .offline-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .offline-message {
+            font-size: 24px;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        .retry-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .retry-button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="offline-container">
+            <div class="offline-icon">📶</div>
+            <h1 class="offline-message">You're Offline</h1>
+            <p>Please check your internet connection and try again.</p>
+            <button class="retry-button" onclick="window.location.reload()">Retry</button>
+        </div>
+    </div>
+</body>
+</html> 
