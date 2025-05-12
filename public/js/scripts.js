@@ -125,7 +125,7 @@ async function loadItems() {
                 }
             }
         } catch (parseError) {
-            // console.error('Error parsing error message:', parseError);
+            console.error('Error parsing error message:', parseError);
         }
         
         // Check if itemsContainer exists before using it

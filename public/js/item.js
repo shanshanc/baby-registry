@@ -7,7 +7,7 @@ function createItemHTML(item) {
     if (item.category === 'Donate') {
         return `
             <div class="item" data-item="${item.id}">
-                <div class="item-content donate-info">
+                <div class="item-content donate-info" data-product="donate">
                     <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
                     <img class="donate-qr-code" src="${item.imageUrl || DONATE_QR_FALLBACK}" alt="Donate QR Code" class="donate-image">
                 </div>
@@ -25,10 +25,13 @@ function createItemHTML(item) {
         <input type="text" class="taken-by" placeholder="您的大名 💕">
         <button class="save-button" disabled>${ClaimText.CLAIM}</button>
     </div>`;
+
+    const productNameEn = item.product.toLowerCase().replace(/ /g, '-').trim();
+    const productNameZH = item.productZH.trim();
     
     return `
         <div class="item" data-item="${item.id}">
-            <div class="item-content">
+            <div class="item-content" data-product="${productNameEn} ${productNameZH}">
                 ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${productName}" class="item-image">` : ''}
                 <div class="item-details">
                     <div class="product-header">

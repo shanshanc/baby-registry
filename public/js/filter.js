@@ -38,16 +38,14 @@ function filterAndSearchItems() {
     
     items.forEach(item => {
         const status = item.querySelector('.product-status');
-        const productName = item.querySelector('.product-name')?.textContent || '';
-        const productNameZH = item.querySelector('.product-name')?.textContent || '';
+        const productData = item.querySelector('.item-content')?.dataset.product || '';
         
         const matchesFilter = currentFilter === 'all' || 
             (currentFilter === 'available' && status?.classList.contains('available')) ||
             (currentFilter === 'taken' && status?.classList.contains('taken'));
             
         const matchesSearch = !currentSearch || 
-            productName.toLowerCase().includes(currentSearch.toLowerCase()) ||
-            productNameZH.toLowerCase().includes(currentSearch.toLowerCase());
+            productData.includes(currentSearch.toLowerCase());
             
         const isVisible = matchesFilter && matchesSearch;
         item.style.display = isVisible ? '' : 'none';
@@ -84,11 +82,32 @@ function attachFilterListeners() {
 
 function attachSearchListener() {
     const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('search-clear-btn');
+    
     if (searchInput) {
+        // Input event listener
         searchInput.addEventListener('input', (e) => {
             currentSearch = e.target.value.trim();
             filterAndSearchItems();
+            
+            // Show/hide clear button based on search content
+            if (currentSearch.length > 0) {
+                clearBtn.classList.add('visible');
+            } else {
+                clearBtn.classList.remove('visible');
+            }
         });
+        
+        // Clear button click handler
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                currentSearch = '';
+                filterAndSearchItems();
+                clearBtn.classList.remove('visible');
+                searchInput.focus(); // Return focus to the search input
+            });
+        }
     }
 }
 
