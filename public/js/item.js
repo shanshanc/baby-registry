@@ -1,6 +1,6 @@
 import { Category, CATEGORY_TO_SUBCATEGORIES, ClaimText } from './types.js';
 import { DONATE_QR_FALLBACK } from './constants.js';
-import { createOptimizedImage } from './imageOptimizer.js';
+import { createOptimizedImage, DEFAULT_FALLBACK_IMAGE } from './imageOptimizer.js';
 
 function createItemHTML(item) {
     const productName = item.product.toLowerCase().replace(/ /g, '-');
@@ -10,7 +10,10 @@ function createItemHTML(item) {
             <div class="item" data-item="${item.id}">
                 <div class="item-content donate-info" data-product="donate">
                     <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
-                    ${createOptimizedImage(item.imageUrl || DONATE_QR_FALLBACK, "Donate QR Code", "donate-qr-code donate-image")}
+                    <div class="image-container">
+                        <img src="${DEFAULT_FALLBACK_IMAGE}" alt="Placeholder" class="placeholder-image">
+                        ${createOptimizedImage(item.imageUrl || DONATE_QR_FALLBACK, "Donate QR Code", "donate-qr-code donate-image")}
+                    </div>
                 </div>
             </div>
         `;
@@ -33,7 +36,10 @@ function createItemHTML(item) {
     return `
         <div class="item" data-item="${item.id}">
             <div class="item-content" data-product="${productNameEn} ${productNameZH}">
-                ${item.imageUrl ? createOptimizedImage(item.imageUrl, productName, "item-image") : ''}
+                <div class="image-container">
+                    <img src="${DEFAULT_FALLBACK_IMAGE}" alt="Placeholder" class="placeholder-image">
+                    ${item.imageUrl ? createOptimizedImage(item.imageUrl, productName, "item-image") : ''}
+                </div>
                 <div class="item-details">
                     <div class="product-header">
                         ${item.url ? `<a href="${item.url}" class="product-name" target="_blank" rel="">${item.productZH}</a>` : ''}

@@ -9,7 +9,26 @@
 import { DEBUG_MODE } from './constants.js';
 
 // Default fallback image for products
-const DEFAULT_FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' text-anchor='middle' dominant-baseline='middle' fill='%23999'%3EImage%3C/text%3E%3C/svg%3E";
+export const DEFAULT_FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' text-anchor='middle' dominant-baseline='middle' fill='%23999'%3EImage%3C/text%3E%3C/svg%3E";
+
+/**
+ * Handles the load event for optimized images
+ * This is also exposed globally for inline onload attributes
+ */
+export function handleOptimizedImageLoad(img) {
+    if (img.src !== img.getAttribute('data-fallback')) {
+        img.classList.remove('lazy-image');
+        const placeholder = img.parentNode.querySelector('.placeholder-image');
+        if (placeholder) {
+            placeholder.style.display = 'none';
+        }
+    }
+}
+
+// Explicitly attach handleOptimizedImageLoad to window for inline attribute usage
+if (typeof window !== 'undefined') {
+    window.handleOptimizedImageLoad = handleOptimizedImageLoad;
+}
 
 /**
  * Creates a lazy-loaded image element with fallback support
@@ -35,7 +54,32 @@ export function createOptimizedImage(src, alt, className, fallbackSrc = DEFAULT_
         style="${placeholderStyle}"
         loading="lazy" 
         onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
+        onload="handleOptimizedImageLoad(this)"
     >`;
+}
+
+/**
+ * Handles image load event for lazy-loaded images
+ * @param {HTMLImageElement} image - The image element that loaded
+ */
+function handleImageLoad(image) {
+    // Use the same function we export for inline attributes
+    handleOptimizedImageLoad(image);
+}
+
+/**
+ * Handles image error event for lazy-loaded images
+ * @param {HTMLImageElement} image - The image element that failed to load
+ * @param {string} fallbackSrc - The fallback source to use
+ */
+function handleImageError(image, fallbackSrc) {
+    // Failed to load - use fallback
+    if (DEBUG_MODE) {
+        console.log('Image failed to load, using fallback', image.dataset.src);
+    }
+    image.onerror = null; // Prevent infinite loop
+    image.src = fallbackSrc;
+    image.classList.remove('lazy-image');
 }
 
 /**
@@ -56,16 +100,11 @@ export function initLazyLoading() {
                         
                         // Add onload and onerror handlers before changing src
                         lazyImage.onload = function() {
-                            // Successfully loaded - remove lazy-image class to apply transitions
-                            lazyImage.classList.remove('lazy-image');
+                            handleImageLoad(this);
                         };
                         
                         lazyImage.onerror = function() {
-                            // Failed to load - use fallback
-                            console.log('Image failed to load, using fallback', lazyImage.dataset.src);
-                            this.onerror = null; // Prevent infinite loop
-                            this.src = fallbackSrc;
-                            lazyImage.classList.remove('lazy-image');
+                            handleImageError(this, fallbackSrc);
                         };
                         
                         // Set the actual source
@@ -89,40 +128,19 @@ export function initLazyLoading() {
                 // Store fallback for error handling
                 const fallbackSrc = img.src;
                 
+                // Add onload handler before changing src
+                img.onload = function() {
+                    handleImageLoad(this);
+                };
+                
                 // Add error handler before changing src
                 img.onerror = function() {
-                    console.log('Image failed to load in fallback mode, using fallback', img.dataset.src);
-                    this.onerror = null;
-                    this.src = fallbackSrc;
-                    img.classList.remove('lazy-image');
+                    handleImageError(this, fallbackSrc);
                 };
                 
                 img.src = img.dataset.src;
             }
-            img.classList.remove('lazy-image');
         });
-    }
-}
-
-/**
- * Add CSS styles for lazy images
- */
-export function addLazyImageStyles() {
-    // Add these styles only if they don't already exist
-    if (!document.getElementById('lazy-image-styles')) {
-        const styleElement = document.createElement('style');
-        styleElement.id = 'lazy-image-styles';
-        styleElement.textContent = `
-            .lazy-image {
-                opacity: 0;
-                transition: opacity 0.3s ease-in-out;
-            }
-            
-            img:not(.lazy-image) {
-                opacity: 1;
-            }
-        `;
-        document.head.appendChild(styleElement);
     }
 }
 

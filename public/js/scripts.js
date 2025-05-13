@@ -5,7 +5,7 @@ import { initFilters, filterAndSearchItems, updateControlCheckboxesState } from 
 import { initCategories } from './category.js';
 import { renderItems } from './item.js';
 import ItemManager from './itemManager.js';
-import { initLazyLoading, addLazyImageStyles, testFallbacks } from './imageOptimizer.js';
+import { initLazyLoading, testFallbacks } from './imageOptimizer.js';
 
 function toggleItems(itemEle) {
     // Toggle the selected category header
@@ -265,9 +265,6 @@ async function start() {
     // Initialize category DOM structure and attach event listeners
     initCategories(); 
     attachEventListeners();
-    
-    // Add lazy image styles before loading items
-    addLazyImageStyles();
     
     // Expose testing functions to global scope, but only in debug mode
     if (DEBUG_MODE) {
