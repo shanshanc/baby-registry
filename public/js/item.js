@@ -1,5 +1,5 @@
 import { Category, CATEGORY_TO_SUBCATEGORIES, ClaimText } from './types.js';
-import { DONATE_QR_FALLBACK } from './constants.js';
+import { DONATE_QR_FALLBACK, MESSAGES } from './constants.js';
 import { createOptimizedImage, DEFAULT_FALLBACK_IMAGE } from './imageOptimizer.js';
 
 function createItemHTML(item) {
@@ -46,7 +46,7 @@ function createItemHTML(item) {
                         ${statusSpan}
                     </div>
                     ${item.url ? `<div class="product-url"><span>查看產品: </span><a href="${item.url}" class="product-url" target="_blank" rel="">連結</a></div>` : ''}
-                    ${item.price ? `<div class="product-price">$${item.price}</div>` : ''}
+                    ${item.price ? `<div class="product-price">$${item.price}<span class="price-info-icon" data-tooltip="${MESSAGES.priceInfo.zh}"><i class="fa-solid fa-circle-info"></i></span></div>` : ''}
                     ${claimFields}
                 </div>
             </div>

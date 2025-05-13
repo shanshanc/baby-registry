@@ -35,6 +35,9 @@ export const MESSAGES = {
       en: 'To ensure a fair experience for all users, we need to limit requests. Please wait 5 minutes before trying again.',
       zh: '抱歉，目前流量過大，請稍候5分鐘再試，謝謝您的體諒。'
     }
+  },
+  priceInfo: {
+    zh: '實際價格以產品頁為準'
   }
 };
 
