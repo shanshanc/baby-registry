@@ -109,9 +109,13 @@ async function handleApiRequest(request, isDebugMode) {
     console.log('[Service Worker] API request in debug mode:', request.url);
   }
   
+  // Check if this is a GET request - only GET requests can be cached
+  const isGetRequest = request.method === 'GET';
+  
   // Start fetch in the background right away
   const fetchPromise = fetch(request).then(async (networkResponse) => {
-    if (networkResponse.ok) {
+    // Only try to cache GET requests
+    if (networkResponse.ok && isGetRequest) {
       // Clone the response before putting it in the cache
       await cache.put(request, networkResponse.clone());
       if (isDebugMode) {
@@ -124,7 +128,26 @@ async function handleApiRequest(request, isDebugMode) {
     return null;
   });
   
-  // Try to get from cache while the fetch is happening
+  // For non-GET requests, don't try to use the cache
+  if (!isGetRequest) {
+    if (isDebugMode) {
+      console.log('[Service Worker] Non-GET request, not using cache:', request.url);
+    }
+    const networkResponse = await fetchPromise;
+    if (networkResponse) {
+      return networkResponse;
+    }
+    
+    // If network fails for non-GET, return error
+    return new Response(JSON.stringify({ 
+      error: "Network error - unable to process request" 
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+  
+  // For GET requests, try to get from cache while the fetch is happening
   const cachedResponse = await cache.match(request);
   
   if (cachedResponse) {

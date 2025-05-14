@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap">
     <!-- Preload critical assets -->
-    <link rel="preload" href="js/constants.js" as="script">
-    <link rel="preload" href="js/imageOptimizer.js" as="script">
-    <link rel="preload" href="js/scripts.js" as="script">
+    <link rel="preload" href="js/constants.js" as="script" crossorigin="anonymous">
+    <link rel="preload" href="js/imageOptimizer.js" as="script" crossorigin="anonymous">
+    <link rel="preload" href="js/scripts.js" as="script" crossorigin="anonymous">
     <link rel="preload" href="styles.css" as="style">
     <!-- Debug utilities - loaded based on environment -->
     <script>
@@ -70,20 +70,20 @@
                   <div class="filter-controls-label">篩選認領狀態</div>
                   <div class="filter-controls-radio">
                       <label>
-                          <input type="radio" name="status-filter" value="all" checked> All
+                          <input type="radio" name="status-filter" value="all" checked> 全部
                       </label>
                       <label>
-                          <input type="radio" name="status-filter" value="available"> Available
+                          <input type="radio" name="status-filter" value="available"> 可認領
                       </label>
                       <label>
-                          <input type="radio" name="status-filter" value="taken"> Taken
+                          <input type="radio" name="status-filter" value="taken"> 已認領
                       </label>
                   </div>
               </div>
               <div class="search-control">
-                  <div class="search-control-label">搜尋產品</div>
+                  <!-- <div class="search-control-label">搜尋產品</div> -->
                   <div class="search-input-container">
-                      <input type="text" id="search-input" placeholder="Search items...">
+                      <input type="text" id="search-input" placeholder="搜尋產品...">
                       <button type="button" id="search-clear-btn" class="search-clear-btn" aria-label="Clear search">×</button>
                   </div>
               </div>

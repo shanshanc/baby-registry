@@ -2,6 +2,7 @@ import { ClaimText } from './types.js';
 import { showClaimSuccessModal } from './modal.js';
 import { sanitizeInput } from './util.js';
 import { createOptimizedImage } from './imageOptimizer.js';
+import { CONFIG } from './constants.js';
 
 // ItemManager module to encapsulate all item-related functionality
 const ItemManager = {

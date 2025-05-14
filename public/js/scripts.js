@@ -91,7 +91,7 @@ async function loadItems() {
         }).then(response => {
             if (!response.ok) {
                 return response.json().then(errorData => {
-                    throw new Error(errorData.message || MESSAGES.errors.generic.en);
+                    throw new Error(errorData.message || MESSAGES.errors.generic);
                 });
             }
             return response.json();
@@ -99,6 +99,9 @@ async function loadItems() {
         
         // Wait for items to resolve
         const items = await itemsPromise;
+        if (DEBUG_MODE) {
+            console.log('[Debug] total items: ', items.length);
+        }
         
         // Update cache
         localStorage.setItem('cachedItems', JSON.stringify(items));

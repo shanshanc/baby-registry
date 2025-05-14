@@ -10,7 +10,7 @@ function createCategoryHTMLStructure(firstCategoryShouldBeActive = false) {
     let mobileDropdownHTML = `
         <div class="mobile-category-dropdown">
             <div class="dropdown-header">
-                <span>Select Categories</span>
+                <span>選擇分類</span>
                 <svg viewBox="0 0 24 24" class="dropdown-arrow"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
             <div class="dropdown-options">`;

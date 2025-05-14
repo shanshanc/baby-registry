@@ -51,8 +51,9 @@ export const SubcategoryZH = {
 // Mapping from category to subcategories
 export const CATEGORY_TO_SUBCATEGORIES = {
   [Category.Feeding]: [Subcategory.None, Subcategory.Breastfeeding, Subcategory.Bottlefeeding],
-  [Category.Essential]: [Subcategory.None, Subcategory.BabyCare, Subcategory.Bathing, Subcategory.Clothing],
-  [Category.Gear]: [Subcategory.None, Subcategory.Travel],
+  [Category.Sleeping]: [Subcategory.None],
+  [Category.Essential]: [Subcategory.None, Subcategory.BabyCare, Subcategory.Clothing],
+  [Category.Gear]: [Subcategory.None, Subcategory.Travel, Subcategory.Bathing],
   [Category.Toy]: [Subcategory.None, Subcategory.Toy],
   [Category.Mom]: [Subcategory.None, Subcategory.Mom],
   [Category.Donate]: [Subcategory.DonateQRCode]

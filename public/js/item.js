@@ -46,7 +46,7 @@ function createItemHTML(item) {
                         ${statusSpan}
                     </div>
                     ${item.url ? `<div class="product-url"><span>查看產品: </span><a href="${item.url}" class="product-url" target="_blank" rel="">連結</a></div>` : ''}
-                    ${item.price ? `<div class="product-price">$${item.price}<span class="price-info-icon" data-tooltip="${MESSAGES.priceInfo.zh}"><i class="fa-solid fa-circle-info"></i></span></div>` : ''}
+                    ${item.price ? `<div class="product-price">$${item.price}<span class="price-info-icon" data-tooltip="${MESSAGES.priceInfo}"><i class="fa-solid fa-circle-info"></i></span></div>` : ''}
                     ${claimFields}
                 </div>
             </div>
@@ -80,13 +80,13 @@ function renderItems(items) {
     // Populate the structure with items
     items.forEach(item => {
         if (item.category && groupedItems[item.category]) {
-            const subcategoryKey = item.subcategory || "default";
+            const subcategoryKey = item.subcategory || "None";
             
             if (groupedItems[item.category].hasOwnProperty(subcategoryKey)) {
                 groupedItems[item.category][subcategoryKey].push(item);
-            } else if (groupedItems[item.category].hasOwnProperty("default")) {
+            } else if (groupedItems[item.category].hasOwnProperty("None")) {
                 // If subcategory isn't found but we have a default container, use that
-                groupedItems[item.category]["default"].push(item);
+                groupedItems[item.category]["None"].push(item);
             } else {
                 console.warn(`Item's subcategory '${subcategoryKey}' not found for category '${item.category}' and no default container available`);
             }
