@@ -45,15 +45,20 @@ export function createOptimizedImage(src, alt, className, fallbackSrc = DEFAULT_
         display: block;
     `;
     
+    // Try to detect invalid URLs early and use fallback
+    const validUrl = src && src.match(/^https?:\/\//) && !src.includes('undefined') && !src.includes('null');
+    const finalSrc = validUrl ? src : fallbackSrc;
+    
+    // Use a more robust error handling approach
     return `<img 
-        src="${fallbackSrc}" 
-        data-src="${src}" 
+        src="${finalSrc}" 
+        data-src="${validUrl ? src : ''}" 
         data-fallback="${fallbackSrc}"
-        alt="${alt}" 
-        class="${className} lazy-image" 
+        alt="${alt || 'Product image'}" 
+        class="${className} ${validUrl ? 'lazy-image' : ''}" 
         style="${placeholderStyle}"
         loading="lazy" 
-        onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
+        onerror="this.onerror=null; if(this.src !== this.getAttribute('data-fallback')) { this.src=this.getAttribute('data-fallback'); }"
         onload="handleOptimizedImageLoad(this)"
     >`;
 }
@@ -96,7 +101,7 @@ export function initLazyLoading() {
                     // Replace data-src with actual src attribute
                     if (lazyImage.dataset.src) {
                         // Store fallback for error handling
-                        const fallbackSrc = lazyImage.src;
+                        const fallbackSrc = lazyImage.getAttribute('data-fallback') || DEFAULT_FALLBACK_IMAGE;
                         
                         // Add onload and onerror handlers before changing src
                         lazyImage.onload = function() {
@@ -104,8 +109,25 @@ export function initLazyLoading() {
                         };
                         
                         lazyImage.onerror = function() {
-                            handleImageError(this, fallbackSrc);
+                            if (DEBUG_MODE) {
+                                console.log('Image failed to load, using fallback', this.dataset.src);
+                            }
+                            this.onerror = null; // Prevent infinite loop
+                            this.src = fallbackSrc;
                         };
+                        
+                        // For cross-origin images, add crossorigin attribute
+                        try {
+                            const imageUrl = new URL(lazyImage.dataset.src);
+                            if (imageUrl.origin !== window.location.origin) {
+                                lazyImage.crossOrigin = "anonymous";
+                            }
+                        } catch (e) {
+                            // Invalid URL, will fallback
+                            if (DEBUG_MODE) {
+                                console.warn('Invalid image URL:', lazyImage.dataset.src);
+                            }
+                        }
                         
                         // Set the actual source
                         lazyImage.src = lazyImage.dataset.src;
@@ -119,14 +141,17 @@ export function initLazyLoading() {
 
         // Observe all images with lazy-image class
         document.querySelectorAll('img.lazy-image').forEach(img => {
-            imageObserver.observe(img);
+            // Skip images that already have their final src
+            if (img.dataset.src && img.src !== img.dataset.src) {
+                imageObserver.observe(img);
+            }
         });
     } else {
         // Fallback for browsers that don't support Intersection Observer
         document.querySelectorAll('img.lazy-image').forEach(img => {
-            if (img.dataset.src) {
+            if (img.dataset.src && img.src !== img.dataset.src) {
                 // Store fallback for error handling
-                const fallbackSrc = img.src;
+                const fallbackSrc = img.getAttribute('data-fallback') || DEFAULT_FALLBACK_IMAGE;
                 
                 // Add onload handler before changing src
                 img.onload = function() {
@@ -135,8 +160,22 @@ export function initLazyLoading() {
                 
                 // Add error handler before changing src
                 img.onerror = function() {
-                    handleImageError(this, fallbackSrc);
+                    if (DEBUG_MODE) {
+                        console.log('Image failed to load, using fallback', this.dataset.src);
+                    }
+                    this.onerror = null; // Prevent infinite loop
+                    this.src = fallbackSrc;
                 };
+                
+                // For cross-origin images, add crossorigin attribute
+                try {
+                    const imageUrl = new URL(img.dataset.src);
+                    if (imageUrl.origin !== window.location.origin) {
+                        img.crossOrigin = "anonymous";
+                    }
+                } catch (e) {
+                    // Invalid URL, will fallback
+                }
                 
                 img.src = img.dataset.src;
             }

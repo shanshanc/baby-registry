@@ -89,6 +89,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // Special handling for images - use network-first approach
+  if (url.pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|avif)$/i) || 
+      (url.hostname !== self.location.hostname && url.href.match(/\.(jpg|jpeg|png|gif|svg|webp|avif)/i))) {
+    event.respondWith(handleImageRequest(event.request, isDebugMode));
+    return;
+  }
+  
   // Handle API requests
   if (url.pathname.startsWith('/api/') || url.href.includes('/items')) {
     event.respondWith(handleApiRequest(event.request, isDebugMode));
@@ -98,6 +105,72 @@ self.addEventListener('fetch', (event) => {
   // Handle static assets
   event.respondWith(handleStaticRequest(event.request, isDebugMode));
 });
+
+// Handle image requests with network-first strategy
+async function handleImageRequest(request, isDebugMode) {
+  const cache = await caches.open(STATIC_CACHE);
+  const isCrossOrigin = new URL(request.url).origin !== self.location.origin;
+  
+  if (isDebugMode) {
+    console.log(`[Service Worker] Image request (${isCrossOrigin ? 'cross-origin' : 'same-origin'}):`, request.url);
+  }
+  
+  try {
+    // Try network first for images
+    const fetchOptions = isCrossOrigin ? { mode: 'cors', credentials: 'omit' } : {};
+    const networkResponse = await fetch(request, fetchOptions);
+    
+    if (networkResponse.ok) {
+      // Store in cache for later
+      await cache.put(request, networkResponse.clone());
+      if (isDebugMode) {
+        console.log('[Service Worker] Image fetched successfully and cached:', request.url);
+      }
+      return networkResponse;
+    } else {
+      // If response is not OK, try the cache
+      const cachedResponse = await cache.match(request);
+      if (cachedResponse) {
+        if (isDebugMode) {
+          console.log('[Service Worker] Network failed for image, using cache:', request.url);
+        }
+        return cachedResponse;
+      }
+      
+      // If no cache, return the error response
+      return networkResponse;
+    }
+  } catch (error) {
+    if (isDebugMode) {
+      console.error('[Service Worker] Network error for image, trying cache:', request.url, error);
+    }
+    
+    // Try from cache
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // If image is cross-origin, try a no-cors fetch as a last resort
+    if (isCrossOrigin) {
+      try {
+        if (isDebugMode) {
+          console.log('[Service Worker] Trying no-cors mode for cross-origin image:', request.url);
+        }
+        const noCorsResponse = await fetch(request, { mode: 'no-cors' });
+        return noCorsResponse;
+      } catch (noCorsError) {
+        console.error('[Service Worker] No-cors fetch also failed for image:', request.url);
+      }
+    }
+    
+    // If both network and cache fail, return a generic image or error
+    return new Response('Image not available', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+}
 
 // Handle API requests with stale-while-revalidate strategy
 async function handleApiRequest(request, isDebugMode) {
@@ -182,25 +255,7 @@ async function handleApiRequest(request, isDebugMode) {
 async function handleStaticRequest(request, isDebugMode) {
   const cache = await caches.open(STATIC_CACHE);
   
-  // In debug mode, network-first for images to test lazy loading
-  if (isDebugMode && request.url.match(/\.(jpg|jpeg|png|gif|svg|webp)$/i)) {
-    if (isDebugMode) {
-      console.log('[Service Worker] Image request in debug mode, network-first:', request.url);
-    }
-    
-    try {
-      const response = await fetch(request);
-      if (response.ok) {
-        await cache.put(request, response.clone());
-      }
-      return response;
-    } catch (error) {
-      console.log('[Service Worker] Network failed for image in debug mode, using cache');
-      return cache.match(request);
-    }
-  }
-  
-  // Regular cache-first for other static assets
+  // Regular cache-first for static assets
   const cachedResponse = await cache.match(request);
   
   if (cachedResponse) {
