@@ -718,6 +718,10 @@ img[src^="data:image/svg"] {
   .item-image {
     margin: 0 auto;
   }
+  .claim-fields.visible {
+    width: 100%;
+    justify-content: center;
+  }
   .claimed-badge {
     font-size: 12px;
   }
