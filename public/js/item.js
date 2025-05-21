@@ -11,7 +11,6 @@ function createItemHTML(item) {
                 <div class="item-content donate-info" data-product="donate">
                     <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
                     <div class="image-container">
-                        <img src="${DEFAULT_FALLBACK_IMAGE}" alt="Placeholder" class="placeholder-image">
                         ${createOptimizedImage(item.imageUrl || DONATE_QR_FALLBACK, "Donate QR Code", "donate-qr-code donate-image")}
                     </div>
                 </div>
@@ -37,8 +36,9 @@ function createItemHTML(item) {
         <div class="item" data-item="${item.id}">
             <div class="item-content" data-product="${productNameEn} ${productNameZH}">
                 <div class="image-container">
-                    <img src="${DEFAULT_FALLBACK_IMAGE}" alt="Placeholder" class="placeholder-image">
-                    ${item.imageUrl ? createOptimizedImage(item.imageUrl, productName, "item-image") : ''}
+                    <div class="preview">
+                        ${item.imageUrl ? createOptimizedImage(item.imageUrl, productName, "item-image") : ''}
+                    </div>
                 </div>
                 <div class="item-details">
                     <div class="product-header">

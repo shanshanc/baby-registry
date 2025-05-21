@@ -18,10 +18,6 @@ export const DEFAULT_FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://w
 export function handleOptimizedImageLoad(img) {
     if (img.src !== img.getAttribute('data-fallback')) {
         img.classList.remove('lazy-image');
-        const placeholder = img.parentNode.querySelector('.placeholder-image');
-        if (placeholder) {
-            placeholder.style.display = 'none';
-        }
     }
 }
 
@@ -38,38 +34,21 @@ if (typeof window !== 'undefined') {
  * @param {string} fallbackSrc - Optional fallback image source
  * @returns {string} HTML string for the optimized image
  */
-export function createOptimizedImage(src, alt, className, fallbackSrc = DEFAULT_FALLBACK_IMAGE) {
-    // Add inline style for immediate placeholder appearance
-    const placeholderStyle = `
-        background-color: #f0f0f0;
-        display: block;
-    `;
-    
+export function createOptimizedImage(src, alt, className, fallbackSrc = DEFAULT_FALLBACK_IMAGE) {    
     // Try to detect invalid URLs early and use fallback
-    const validUrl = src && src.match(/^https?:\/\//) && !src.includes('undefined') && !src.includes('null');
+    const validUrl = src && (isHttpImage(src) || isDataImage(src)) && !src.includes('undefined') && !src.includes('null');
     const finalSrc = validUrl ? src : fallbackSrc;
     
-    // Use a more robust error handling approach
     return `<img 
         src="${finalSrc}" 
         data-src="${validUrl ? src : ''}" 
         data-fallback="${fallbackSrc}"
         alt="${alt || 'Product image'}" 
         class="${className} ${validUrl ? 'lazy-image' : ''}" 
-        style="${placeholderStyle}"
         loading="lazy" 
-        onerror="this.onerror=null; if(this.src !== this.getAttribute('data-fallback')) { this.src=this.getAttribute('data-fallback'); }"
+        onerror="handleImageError(this)"
         onload="handleOptimizedImageLoad(this)"
     >`;
-}
-
-/**
- * Handles image load event for lazy-loaded images
- * @param {HTMLImageElement} image - The image element that loaded
- */
-function handleImageLoad(image) {
-    // Use the same function we export for inline attributes
-    handleOptimizedImageLoad(image);
 }
 
 /**
@@ -77,14 +56,13 @@ function handleImageLoad(image) {
  * @param {HTMLImageElement} image - The image element that failed to load
  * @param {string} fallbackSrc - The fallback source to use
  */
-function handleImageError(image, fallbackSrc) {
-    // Failed to load - use fallback
+function handleImageError(img, fallbackSrc = DEFAULT_FALLBACK_IMAGE) {
     if (DEBUG_MODE) {
         console.log('Image failed to load, using fallback', image.dataset.src);
     }
-    image.onerror = null; // Prevent infinite loop
-    image.src = fallbackSrc;
-    image.classList.remove('lazy-image');
+    // Prevent infinite loop
+    img.onerror = null;
+    img.src = fallbackSrc;
 }
 
 /**
@@ -100,22 +78,6 @@ export function initLazyLoading() {
                     
                     // Replace data-src with actual src attribute
                     if (lazyImage.dataset.src) {
-                        // Store fallback for error handling
-                        const fallbackSrc = lazyImage.getAttribute('data-fallback') || DEFAULT_FALLBACK_IMAGE;
-                        
-                        // Add onload and onerror handlers before changing src
-                        lazyImage.onload = function() {
-                            handleImageLoad(this);
-                        };
-                        
-                        lazyImage.onerror = function() {
-                            if (DEBUG_MODE) {
-                                console.log('Image failed to load, using fallback', this.dataset.src);
-                            }
-                            this.onerror = null; // Prevent infinite loop
-                            this.src = fallbackSrc;
-                        };
-                        
                         // For cross-origin images, add crossorigin attribute
                         try {
                             const imageUrl = new URL(lazyImage.dataset.src);
@@ -129,7 +91,7 @@ export function initLazyLoading() {
                             }
                         }
                         
-                        // Set the actual source
+                        // Set the actual source - onload/onerror handlers are already defined as HTML attributes
                         lazyImage.src = lazyImage.dataset.src;
                     }
                     
@@ -150,23 +112,6 @@ export function initLazyLoading() {
         // Fallback for browsers that don't support Intersection Observer
         document.querySelectorAll('img.lazy-image').forEach(img => {
             if (img.dataset.src && img.src !== img.dataset.src) {
-                // Store fallback for error handling
-                const fallbackSrc = img.getAttribute('data-fallback') || DEFAULT_FALLBACK_IMAGE;
-                
-                // Add onload handler before changing src
-                img.onload = function() {
-                    handleImageLoad(this);
-                };
-                
-                // Add error handler before changing src
-                img.onerror = function() {
-                    if (DEBUG_MODE) {
-                        console.log('Image failed to load, using fallback', this.dataset.src);
-                    }
-                    this.onerror = null; // Prevent infinite loop
-                    this.src = fallbackSrc;
-                };
-                
                 // For cross-origin images, add crossorigin attribute
                 try {
                     const imageUrl = new URL(img.dataset.src);
@@ -177,10 +122,29 @@ export function initLazyLoading() {
                     // Invalid URL, will fallback
                 }
                 
+                // Set the actual source - onload/onerror handlers are already defined as HTML attributes
                 img.src = img.dataset.src;
             }
         });
     }
+}
+
+/**
+ * Helper function to check if the image source is a data URL
+ * @param {string} src - The image source URL
+ * @returns {boolean} True if the source is a data URL, false otherwise
+ */
+export function isDataImage(src) {
+  return typeof src === 'string' && src.startsWith('data:image/');
+}
+
+/**
+ * Helper function to check if the image source is an HTTP URL
+ * @param {string} src - The image source URL
+ * @returns {boolean} True if the source is an HTTP URL, false otherwise
+ */
+export function isHttpImage(src) {
+  return typeof src === 'string' && src.match(/^https?:\/\//);
 }
 
 /**
