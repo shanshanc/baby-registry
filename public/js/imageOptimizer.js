@@ -21,11 +21,6 @@ export function handleOptimizedImageLoad(img) {
     }
 }
 
-// Explicitly attach handleOptimizedImageLoad to window for inline attribute usage
-if (typeof window !== 'undefined') {
-    window.handleOptimizedImageLoad = handleOptimizedImageLoad;
-}
-
 /**
  * Creates a lazy-loaded image element with fallback support
  * @param {string} src - The image source URL
@@ -58,7 +53,7 @@ export function createOptimizedImage(src, alt, className, fallbackSrc = DEFAULT_
  */
 function handleImageError(img, fallbackSrc = DEFAULT_FALLBACK_IMAGE) {
     if (DEBUG_MODE) {
-        console.log('Image failed to load, using fallback', image.dataset.src);
+        console.log('Image failed to load, using fallback', img.dataset.src);
     }
     // Prevent infinite loop
     img.onerror = null;
@@ -169,4 +164,11 @@ export function testFallbacks() {
 // replace it with the real implementation
 if (DEBUG_MODE && typeof window !== 'undefined' && typeof window.testImageFallbacks === 'function') {
     window.testImageFallbacks = testFallbacks;
+} 
+
+// --- Expose functions to global scope for inline HTML attributes ---
+if (typeof window !== 'undefined') {
+    window.handleOptimizedImageLoad = handleOptimizedImageLoad;
+    window.handleImageError = handleImageError;
+    // testFallbacks is conditionally exposed above if DEBUG_MODE is true
 } 

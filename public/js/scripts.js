@@ -109,8 +109,7 @@ async function loadItems() {
         const items = await fetch(url, {
             cache: 'no-store',
             mode: 'cors'
-        })
-        .then(response => {
+        }).then(response => {
             if (!response.ok) {
                 return response.json().then(errorData => {
                     throw new Error(errorData.message || MESSAGES.errors.generic);
@@ -306,7 +305,7 @@ async function start() {
     initFilters();
 
     // Initialize category DOM structure and attach event listeners
-    initCategories(); 
+    await initCategories(); 
     attachEventListeners();
     
     // Expose testing functions to global scope, but only in debug mode

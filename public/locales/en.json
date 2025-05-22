@@ -1,0 +1,33 @@
+{
+  "Category": {
+    "Feeding": "Feeding",
+    "Sleeping": "Sleeping",
+    "Essential": "Essential",
+    "Gear": "Gear",
+    "Toy": "Toy",
+    "Mom": "Mom",
+    "Donate": "Donate"
+  },
+  "Subcategory": {
+    "FEED_None": "None",
+    "FEED_Breastfeeding": "Breastfeeding",
+    "FEED_Bottlefeeding": "Bottlefeeding",
+    "FEED_Electronics": "Electronics",
+    "SLEP_None": "None",
+    "SLEP_Clothing": "Clothing",
+    "SLEP_Electronics": "Electronics",
+    "ESSN_BabyCare": "BabyCare",
+    "ESSN_Cleaning": "Cleaning",
+    "ESSN_Bathing": "Bathing",
+    "ESSN_Bibs": "Bibs",
+    "ESSN_Clothing": "Clothing",
+    "ESSN_Diapers": "Diapers",
+    "ESSN_Outdoor": "Outdoor",
+    "GEAR_None": "None",
+    "GEAR_HomeSafety": "HomeSafety",
+    "GEAR_Outdoor": "Outdoor",
+    "TOY_None": "None",
+    "MOM_None": "None",
+    "DONATE_None": "None"
+  }
+}

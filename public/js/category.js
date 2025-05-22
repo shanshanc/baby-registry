@@ -1,7 +1,8 @@
-import { Category, CategoryZH, SubcategoryZH, CATEGORY_TO_SUBCATEGORIES } from './types.js';
+import { Category, CategoryToSubcategories } from './types.js';
+import { translate, loadLanguage } from './util.js';
 
 // Builds the static HTML structure for categories and subcategories
-function createCategoryHTMLStructure(firstCategoryShouldBeActive = false) {
+async function createCategoryHTMLStructure(firstCategoryShouldBeActive = false) {
     let categoryHeadersHTML = '';
     let itemsDisplayHTML = '';
     let isFirstCategoryInLoop = true;
@@ -21,7 +22,7 @@ function createCategoryHTMLStructure(firstCategoryShouldBeActive = false) {
         categoryHeadersHTML += `
             <div class="category">
                 <h2 class="cat-${categoryName.toLowerCase()} ${isActive ? 'active' : ''}" data-category="${categoryName}">
-                    ${CategoryZH[categoryName]}
+                    ${translate('Category.' + categoryName)}
                 </h2>
             </div>`;
 
@@ -29,17 +30,17 @@ function createCategoryHTMLStructure(firstCategoryShouldBeActive = false) {
         mobileDropdownHTML += `
             <label class="dropdown-option">
                 <input type="checkbox" value="${categoryName}" ${isActive ? 'checked' : ''}>
-                <span>${CategoryZH[categoryName]}</span>
+                <span>${translate('Category.' + categoryName)}</span>
             </label>`;
 
         let subcategoriesRenderedHTML = '';
-        const predefinedSubcats = CATEGORY_TO_SUBCATEGORIES[categoryName];
+        const predefinedSubcats = CategoryToSubcategories[categoryName];
 
         if (predefinedSubcats && predefinedSubcats.length > 0) {
             predefinedSubcats.forEach(subcatName => {
                 subcategoriesRenderedHTML += `
                     <div class="subcategory sub-${subcatName}">
-                        <h3>${SubcategoryZH[subcatName] ? SubcategoryZH[subcatName] : subcatName}</h3>
+                        <h3>${translate('Subcategory.' + subcatName)}</h3>
                     </div>
                     <div class="items-list" data-category-name="${categoryName}" data-subcategory-name="${subcatName}">
                         <p class="no-items-message">No items in this subcategory yet.</p>
@@ -115,7 +116,9 @@ function initMobileDropdown() {
 }
 
 // Initializes the category DOM structure (headers and empty item containers)
-function initCategories() {
+async function initCategories() {
+    await loadLanguage('zh-TW');
+    
     const categoryContainer = document.getElementById('category-container');
     const itemsContainer = document.getElementById('items-container');
 
@@ -125,7 +128,7 @@ function initCategories() {
     }
 
     // Create HTML for categories (headers) and subcategory structure (item display areas)
-    const { categoryHeadersHTML, itemsDisplayHTML } = createCategoryHTMLStructure(true);
+    const { categoryHeadersHTML, itemsDisplayHTML } = await createCategoryHTMLStructure(true);
 
     categoryContainer.innerHTML = categoryHeadersHTML;
     

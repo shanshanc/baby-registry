@@ -1,0 +1,33 @@
+{
+  "Category": {
+    "Feeding": "哺乳",
+    "Sleeping": "舒眠寢具",
+    "Essential": "生活用品",
+    "Gear": "嬰幼兒裝備",
+    "Toy": "玩具",
+    "Mom": "媽媽用品",
+    "Donate": "直接贊助"
+  },
+  "Subcategory": {
+    "FEED_None": "哺育用品",
+    "FEED_Breastfeeding": "母乳哺餵",
+    "FEED_Bottlefeeding": "奶瓶哺餵",
+    "FEED_Electronics": "電子用品",
+    "SLEP_None": "寢具",
+    "SLEP_Clothing": "童裝",
+    "SLEP_Electronics": "電子用品",
+    "ESSN_BabyCare": "嬰兒護理",
+    "ESSN_Cleaning": "清潔用品",
+    "ESSN_Bathing": "沐浴清潔",
+    "ESSN_Bibs": "圍兜",
+    "ESSN_Clothing": "童裝",
+    "ESSN_Diapers": "尿布",
+    "ESSN_Outdoor": "外出用品",
+    "GEAR_None": "嬰幼兒裝備",
+    "GEAR_HomeSafety": "居家安全",
+    "GEAR_Outdoor": "外出用品",
+    "TOY_None": "玩具",
+    "MOM_None": "媽媽用品",
+    "DONATE_None": "直接贊助"
+  }
+}

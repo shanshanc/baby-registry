@@ -1,69 +1,55 @@
 // Category enum-like object
-export const Category = {
+const Category = {
   Feeding: "Feeding",
-  Essential: "Essential",
   Sleeping: "Sleeping",
+  Essential: "Essential",
   Gear: "Gear",
   Toy: "Toy",
   Mom: "Mom",
   Donate: "Donate"
 };
 
-// Category Mandarin translations
-export const CategoryZH = {
-  [Category.Feeding]: "哺乳",
-  [Category.Essential]: "生活用品",
-  [Category.Sleeping]: "嬰兒床寢具",
-  [Category.Gear]: "外出用品",
-  [Category.Toy]: "玩具",
-  [Category.Mom]: "媽媽用品",
-  [Category.Donate]: "直接贊助"
-};
-
 // Subcategory enum-like object
-export const Subcategory = {
-  Breastfeeding: "Breastfeeding",
-  Bottlefeeding: "Bottlefeeding",
-  Bathing: "Bathing",
-  BabyCare: "BabyCare",
-  Travel: "Travel",
-  Clothing: "Clothing",
-  Toy: "Toy",
-  Mom: "Mom",
-  DonateQRCode: "DonateQRCode",
-  None: "None"
+const Subcategory = {
+  FEED_None: "FEED_None",
+  FEED_Breastfeeding: "FEED_Breastfeeding",
+  FEED_Bottlefeeding: "FEED_Bottlefeeding",
+  FEED_Electronics: "FEED_Electronics",
+  SLEP_None: "SLEP_None",
+  SLEP_Clothing: "SLEP_Clothing",
+  SLEP_Electronics: "SLEP_Electronics",
+  ESSN_BabyCare: "ESSN_BabyCare",
+  ESSN_Cleaning: "ESSN_Cleaning",
+  ESSN_Bathing: "ESSN_Bathing",
+  ESSN_Bibs: "ESSN_Bibs",
+  ESSN_Clothing: "ESSN_Clothing",
+  ESSN_Diapers: "ESSN_Diapers",
+  ESSN_Outdoor: "ESSN_Outdoor",
+  GEAR_None: "GEAR_None",
+  GEAR_HomeSafety: "GEAR_HomeSafety",
+  GEAR_Outdoor: "GEAR_Outdoor",
+  TOY_None: "TOY_None",
+  MOM_None: "MOM_None",
+  DONATE_None: "DONATE_None"
 };
 
-// Subcategory Mandarin translations
-export const SubcategoryZH = {
-  [Subcategory.Breastfeeding]: "母乳哺餵",
-  [Subcategory.Bottlefeeding]: "奶瓶奶嘴週邊",
-  [Subcategory.Bathing]: "沐浴清潔",
-  [Subcategory.BabyCare]: "嬰兒護理",
-  [Subcategory.Travel]: "外出用品",
-  [Subcategory.Clothing]: "童裝",
-  [Subcategory.Toy]: "玩具",
-  [Subcategory.Mom]: "媽媽用品",
-  [Subcategory.DonateQRCode]: "掃描QR碼贊助",
-  [Subcategory.None]: "一般"
-};
-
-// Mapping from category to subcategories
-export const CATEGORY_TO_SUBCATEGORIES = {
-  [Category.Feeding]: [Subcategory.None, Subcategory.Breastfeeding, Subcategory.Bottlefeeding],
-  [Category.Sleeping]: [Subcategory.None],
-  [Category.Essential]: [Subcategory.None, Subcategory.BabyCare, Subcategory.Clothing],
-  [Category.Gear]: [Subcategory.None, Subcategory.Travel, Subcategory.Bathing],
-  [Category.Toy]: [Subcategory.None, Subcategory.Toy],
-  [Category.Mom]: [Subcategory.None, Subcategory.Mom],
-  [Category.Donate]: [Subcategory.DonateQRCode]
+const CategoryToSubcategories = {
+  [Category.Feeding]: [Subcategory.FEED_None, Subcategory.FEED_Breastfeeding, Subcategory.FEED_Bottlefeeding, Subcategory.FEED_Electronics],
+  [Category.Sleeping]: [Subcategory.SLEP_None, Subcategory.SLEP_Clothing, Subcategory.SLEP_Electronics],
+  [Category.Essential]: [Subcategory.ESSN_None, Subcategory.ESSN_BabyCare, Subcategory.ESSN_Cleaning, Subcategory.ESSN_Bathing, Subcategory.ESSN_Bibs, Subcategory.ESSN_Clothing, Subcategory.ESSN_Diapers, Subcategory.ESSN_Outdoor],
+  [Category.Gear]: [Subcategory.GEAR_None, Subcategory.GEAR_HomeSafety, Subcategory.GEAR_Outdoor],
+  [Category.Toy]: [Subcategory.TOY_None],
+  [Category.Mom]: [Subcategory.MOM_None],
+  [Category.Donate]: [Subcategory.DONATE_None]
 };
 
 // UI Text Constants for Claims
-export const ClaimText = {
+const ClaimText = {
   CLAIM: "認領",           // Button text for claiming an item
   CLAIMED: "已認領",       // Text showing an item is claimed
   SAVING: "Saving...",    // Text during save operation
   AVAILABLE: "Available",  // Text for available status
   TAKEN: "Taken"          // Text for taken status
 };
+
+export { Category, Subcategory, CategoryToSubcategories, ClaimText };

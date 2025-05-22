@@ -1,4 +1,4 @@
-import { Category, CATEGORY_TO_SUBCATEGORIES, ClaimText } from './types.js';
+import { Category, CategoryToSubcategories, ClaimText } from './types.js';
 import { DONATE_QR_FALLBACK, MESSAGES } from './constants.js';
 import { createOptimizedImage, DEFAULT_FALLBACK_IMAGE } from './imageOptimizer.js';
 
@@ -46,7 +46,7 @@ function createItemHTML(item) {
                         ${statusSpan}
                     </div>
                     ${item.url ? `<div class="product-url"><span>查看產品: </span><a href="${item.url}" class="product-url" target="_blank" rel="">連結</a></div>` : ''}
-                    ${item.price ? `<div class="product-price">$${item.price}<span class="price-info-icon" data-tooltip="${MESSAGES.priceInfo}"><i class="fa-solid fa-circle-info"></i></span></div>` : ''}
+                    ${item.price ? `<div class="product-price">$${getFormattedPriceString(item.price)}<span class="price-info-icon" data-tooltip="${MESSAGES.priceInfo}"><i class="fa-solid fa-circle-info"></i></span></div>` : ''}
                     ${claimFields}
                 </div>
             </div>
@@ -59,12 +59,12 @@ function renderItems(items) {
     // First, group items by category and subcategory
     const groupedItems = {};
     
-    // Initialize the structure based on Category and CATEGORY_TO_SUBCATEGORIES
+    // Initialize the structure based on Category and CategoryToSubcategories
     Object.values(Category).forEach(categoryName => {
         groupedItems[categoryName] = {};
         
         // Get the predefined subcategories for this category
-        const predefinedSubcats = CATEGORY_TO_SUBCATEGORIES[categoryName];
+        const predefinedSubcats = CategoryToSubcategories[categoryName];
         
         if (predefinedSubcats && predefinedSubcats.length > 0) {
             // Initialize each predefined subcategory with an empty array
@@ -131,7 +131,7 @@ function renderItems(items) {
                     // If it's a default subcategory for a category without defined subcategories,
                     // we'll show the no-items message instead of hiding entirely
                     const isDefaultSubcategory = subcategoryName === 'default';
-                    const hasNoDefinedSubcategories = !(CATEGORY_TO_SUBCATEGORIES[categoryName] && CATEGORY_TO_SUBCATEGORIES[categoryName].length > 0);
+                    const hasNoDefinedSubcategories = !(CategoryToSubcategories[categoryName] && CategoryToSubcategories[categoryName].length > 0);
                     
                     if (isDefaultSubcategory && hasNoDefinedSubcategories) {
                         const containerType = 'category';
@@ -149,6 +149,17 @@ function renderItems(items) {
     });
     
     return groupedItems; // Return the grouped structure in case it's needed elsewhere
+}
+
+function getFormattedPriceString(priceValue) {
+  if (priceValue === null || typeof priceValue === 'undefined') {
+      return ''; 
+  }
+  const num = parseInt(priceValue, 10);
+  if (isNaN(num)) {
+      return priceValue.toString();
+  }
+  return num > 1000 ? num.toLocaleString('en-US') : num.toString();
 }
 
 export { createItemHTML, renderItems };
