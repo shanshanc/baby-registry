@@ -36,7 +36,7 @@ const Subcategory = {
 const CategoryToSubcategories = {
   [Category.Feeding]: [Subcategory.FEED_None, Subcategory.FEED_Breastfeeding, Subcategory.FEED_Bottlefeeding, Subcategory.FEED_Electronics],
   [Category.Sleeping]: [Subcategory.SLEP_None, Subcategory.SLEP_Clothing, Subcategory.SLEP_Electronics],
-  [Category.Essential]: [Subcategory.ESSN_None, Subcategory.ESSN_BabyCare, Subcategory.ESSN_Cleaning, Subcategory.ESSN_Bathing, Subcategory.ESSN_Bibs, Subcategory.ESSN_Clothing, Subcategory.ESSN_Diapers, Subcategory.ESSN_Outdoor],
+  [Category.Essential]: [Subcategory.ESSN_BabyCare, Subcategory.ESSN_Cleaning, Subcategory.ESSN_Bathing, Subcategory.ESSN_Bibs, Subcategory.ESSN_Clothing, Subcategory.ESSN_Diapers, Subcategory.ESSN_Outdoor],
   [Category.Gear]: [Subcategory.GEAR_None, Subcategory.GEAR_HomeSafety, Subcategory.GEAR_Outdoor],
   [Category.Toy]: [Subcategory.TOY_None],
   [Category.Mom]: [Subcategory.MOM_None],

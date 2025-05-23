@@ -1,6 +1,6 @@
-const CACHE_NAME = 'baby-registry-v1';
-const STATIC_CACHE = 'static-v1';
-const API_CACHE = 'api-v1';
+const CACHE_NAME = 'baby-registry-v2';
+const STATIC_CACHE = 'static-v2';
+const API_CACHE = 'api-v2';
 
 // Files to cache on install
 const STATIC_ASSETS = [
@@ -13,6 +13,7 @@ const STATIC_ASSETS = [
   '/js/modal.js',
   '/js/filter.js',
   '/js/category.js',
+  '/js/types.js',
   '/js/item.js',
   '/js/itemManager.js',
   '/js/imageOptimizer.js',
@@ -25,6 +26,9 @@ self.addEventListener('install', (event) => {
   // Log for debugging
   console.log('[Service Worker] Installing');
   
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
+  
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       console.log('[Service Worker] Caching static assets');
@@ -36,6 +40,9 @@ self.addEventListener('install', (event) => {
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activating');
+  
+  // Take control of all clients/pages immediately
+  event.waitUntil(self.clients.claim());
   
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -109,62 +116,57 @@ self.addEventListener('fetch', (event) => {
 // Handle image requests with network-first strategy
 async function handleImageRequest(request, isDebugMode) {
   const cache = await caches.open(STATIC_CACHE);
-  const isCrossOrigin = new URL(request.url).origin !== self.location.origin;
+  const url = new URL(request.url);
+  const isCrossOrigin = url.origin !== self.location.origin;
   
   if (isDebugMode) {
-    console.log(`[Service Worker] Image request (${isCrossOrigin ? 'cross-origin' : 'same-origin'}):`, request.url);
+    console.log(`[SW] Image request: ${request.url}`);
+  }
+  
+  // First check if we have a cached version
+  const cachedResponse = await cache.match(request);
+  if (cachedResponse) {
+    if (isDebugMode) {
+      console.log('[SW] Serving image from cache:', request.url);
+    }
+    return cachedResponse;
   }
   
   try {
-    // Try network first for images
-    const fetchOptions = isCrossOrigin ? { mode: 'cors', credentials: 'omit' } : {};
+    // For cross-origin requests, use different strategies based on domain
+    let fetchOptions = {};
+    
+    if (isCrossOrigin) {
+      // For ALL cross-origin image requests, default to no-cors to be safe
+      fetchOptions = { mode: 'no-cors', credentials: 'omit' };
+      if (isDebugMode) {
+        console.log('[SW] Using no-cors for cross-origin image:', url.hostname);
+      }
+    }
+    
+    if (isDebugMode) {
+      console.log('[SW] Fetching with options:', JSON.stringify(fetchOptions));
+    }
     const networkResponse = await fetch(request, fetchOptions);
     
-    if (networkResponse.ok) {
-      // Store in cache for later
+    // Handle different response types
+    if (networkResponse.ok || (fetchOptions.mode === 'no-cors' && networkResponse.type === 'opaque')) {
+      // Store in cache for later - note that opaque responses from no-cors will have status 0 but are still cacheable
       await cache.put(request, networkResponse.clone());
       if (isDebugMode) {
-        console.log('[Service Worker] Image fetched successfully and cached:', request.url);
+        console.log('[SW] Successfully cached image:', request.url);
       }
       return networkResponse;
     } else {
-      // If response is not OK, try the cache
-      const cachedResponse = await cache.match(request);
-      if (cachedResponse) {
-        if (isDebugMode) {
-          console.log('[Service Worker] Network failed for image, using cache:', request.url);
-        }
-        return cachedResponse;
+      if (isDebugMode) {
+        console.warn('[SW] Network response not OK:', networkResponse.status, networkResponse.statusText);
       }
-      
-      // If no cache, return the error response
       return networkResponse;
     }
   } catch (error) {
-    if (isDebugMode) {
-      console.error('[Service Worker] Network error for image, trying cache:', request.url, error);
-    }
+    console.warn('[SW] Network issue for image (will be handled):', error.message);
     
-    // Try from cache
-    const cachedResponse = await cache.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    // If image is cross-origin, try a no-cors fetch as a last resort
-    if (isCrossOrigin) {
-      try {
-        if (isDebugMode) {
-          console.log('[Service Worker] Trying no-cors mode for cross-origin image:', request.url);
-        }
-        const noCorsResponse = await fetch(request, { mode: 'no-cors' });
-        return noCorsResponse;
-      } catch (noCorsError) {
-        console.error('[Service Worker] No-cors fetch also failed for image:', request.url);
-      }
-    }
-    
-    // If both network and cache fail, return a generic image or error
+    // If all else fails, return a generic image or error
     return new Response('Image not available', {
       status: 503,
       headers: { 'Content-Type': 'text/plain' }
