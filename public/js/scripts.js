@@ -1,3 +1,5 @@
+//# allFunctionsCalledOnLoad
+
 import { CONFIG, MESSAGES, DEBUG_MODE } from './constants.js';
 import { loadConfig } from './util.js';
 import { initModal } from './modal.js';
@@ -103,7 +105,7 @@ async function loadItems() {
         
         // Fetch items from Durable Object - with simple fetch options
         const url = new URL(CONFIG.api.endpoints.items);
-        url.searchParams.append('nocache', Date.now());
+        // url.searchParams.append('nocache', Date.now());
 
         // Try a simpler fetch request without problematic headers
         const items = await fetch(url, {
@@ -163,7 +165,7 @@ async function loadItems() {
             try {
                 // Create URL with cache-busting parameter
                 const url = new URL(CONFIG.api.endpoints.items);
-                url.searchParams.append('nocache', Date.now());
+                // url.searchParams.append('nocache', Date.now());
                 
                 // Simplified fetch options to avoid CORS issues
                 const response = await fetch(url.toString(), {
@@ -235,27 +237,40 @@ async function loadItems() {
 // Function to handle expand all categories
 function handleExpandAllCategories() {
     const collapseAll = document.getElementById('collapse-all');
+    const expandAll = document.getElementById('expand-all');
     
     // Update checkboxes state
     collapseAll.checked = false;
     collapseAll.indeterminate = false;
-    
+    expandAll.checked = true;
     // Expand all categories
     document.querySelectorAll('.category-items').forEach(items => items.classList.add('active'));
     document.querySelectorAll('.category h2').forEach(h2 => h2.classList.add('active'));
+    
+    // Update mobile dropdown checkboxes
+    document.querySelectorAll('.mobile-category-dropdown .dropdown-option input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = true;
+    });
 }
 
 // Function to handle collapse all categories
 function handleCollapseAllCategories() {
     const expandAll = document.getElementById('expand-all');
+    const collapseAll = document.getElementById('collapse-all');
     
     // Update checkboxes state
     expandAll.checked = false;
     expandAll.indeterminate = false;
+    collapseAll.checked = true;
     
     // Collapse all categories
     document.querySelectorAll('.category-items').forEach(items => items.classList.remove('active'));
     document.querySelectorAll('.category h2').forEach(h2 => h2.classList.remove('active'));
+    
+    // Update mobile dropdown checkboxes
+    document.querySelectorAll('.mobile-category-dropdown .dropdown-option input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
 }
 
 // New function to attach listeners to category headers for toggling
@@ -273,14 +288,20 @@ function attachEventListeners() {
   const collapseAll = document.getElementById('collapse-all');
 
   expandAll.addEventListener('click', (e) => {
+      console.log('expandAll', expandAll.checked);
+      console.log('e target', e.target.checked);
       if (expandAll.checked) {
           handleExpandAllCategories();
+      } else {
+          handleCollapseAllCategories();
       }
   });
 
   collapseAll.addEventListener('click', () => {
       if (collapseAll.checked) {
           handleCollapseAllCategories();
+      } else {
+          handleExpandAllCategories();
       }
   });
 

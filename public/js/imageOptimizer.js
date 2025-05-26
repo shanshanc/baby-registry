@@ -1,3 +1,5 @@
+//# allFunctionsCalledOnLoad
+
 /**
  * Image Optimization Utilities
  * 
