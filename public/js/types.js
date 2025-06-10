@@ -6,7 +6,6 @@ const Category = {
   Gear: "Gear",
   Toy: "Toy",
   Mom: "Mom",
-  Donate: "Donate"
 };
 
 // Subcategory enum-like object
@@ -30,7 +29,6 @@ const Subcategory = {
   GEAR_Outdoor: "GEAR_Outdoor",
   TOY_None: "TOY_None",
   MOM_None: "MOM_None",
-  DONATE_None: "DONATE_None"
 };
 
 const CategoryToSubcategories = {
@@ -40,7 +38,6 @@ const CategoryToSubcategories = {
   [Category.Gear]: [Subcategory.GEAR_None, Subcategory.GEAR_HomeSafety, Subcategory.GEAR_Outdoor],
   [Category.Toy]: [Subcategory.TOY_None],
   [Category.Mom]: [Subcategory.MOM_None],
-  [Category.Donate]: [Subcategory.DONATE_None]
 };
 
 // UI Text Constants for Claims
