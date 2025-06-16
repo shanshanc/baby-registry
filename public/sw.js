@@ -23,15 +23,11 @@ const STATIC_ASSETS = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-  // Log for debugging
-  console.log('[Service Worker] Installing');
-  
   // Force the waiting service worker to become the active service worker
   self.skipWaiting();
   
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      console.log('[Service Worker] Caching static assets');
       return cache.addAll(STATIC_ASSETS);
     })
   );
@@ -39,8 +35,6 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating');
-  
   // Take control of all clients/pages immediately
   event.waitUntil(self.clients.claim());
   
@@ -49,7 +43,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== STATIC_CACHE && cacheName !== API_CACHE) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -60,17 +53,13 @@ self.addEventListener('activate', (event) => {
 
 // Message event - handle control messages from the client
 self.addEventListener('message', (event) => {
-  console.log('[Service Worker] Received message:', event.data);
-  
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[Service Worker] Skipping waiting');
     self.skipWaiting();
   }
   
   if (event.data && event.data.type === 'CLEAR_CACHES') {
     event.waitUntil(
       caches.keys().then((cacheNames) => {
-        console.log('[Service Worker] Clearing all caches');
         return Promise.all(cacheNames.map(name => caches.delete(name)));
       })
     );

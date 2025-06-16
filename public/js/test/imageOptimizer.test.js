@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { isDataImage, isHttpImage, handleOptimizedImageLoad, createOptimizedImage, DEFAULT_FALLBACK_IMAGE, initLazyLoading } from '../imageOptimizer.js';
+
+import {
+  DEFAULT_FALLBACK_IMAGE,
+  createOptimizedImage,
+  isDataImage,
+  isHttpImage,
+  initLazyLoading,
+  __test_only_setWebpSupported
+} from '../imageOptimizer.js';
 
 describe('isDataImage', () => {
   it('should return true for valid data URLs', () => {
@@ -77,9 +85,8 @@ describe('handleOptimizedImageLoad', () => {
 
 describe('createOptimizedImage', () => {
   const testSrc = 'http://example.com/image.png';
+  const testWebpSrc = 'http://example.com/image.webp';
   const testAlt = 'Test Image';
-  const testClass = 'custom-image-class';
-  const customFallback = 'http://example.com/custom-fallback.png';
 
   // Helper to parse the HTML string and get the element
   const parseImgString = (htmlString) => {
@@ -87,66 +94,97 @@ describe('createOptimizedImage', () => {
     div.innerHTML = htmlString.trim();
     return div.firstChild;
   };
+  
+  // Reset the module state after each test
+  afterEach(() => {
+    __test_only_setWebpSupported(null);
+  });
 
-  it('should create an image with correct src, alt, and class for valid URL', () => {
-    const imgHtml = createOptimizedImage(testSrc, testAlt, testClass);
+  it('should create an image with correct src, alt, and class for valid URL when WebP is not supported', () => {
+    __test_only_setWebpSupported(false);
+    
+    const imgHtml = createOptimizedImage(testSrc, testWebpSrc, { alt: testAlt });
     const imgElement = parseImgString(imgHtml);
 
     expect(imgElement.tagName).toBe('IMG');
     expect(imgElement.src).toBe(testSrc);
     expect(imgElement.getAttribute('data-src')).toBe(testSrc);
     expect(imgElement.getAttribute('alt')).toBe(testAlt);
-    expect(imgElement.classList.contains(testClass)).toBe(true);
+    expect(imgElement.classList.contains('item-image')).toBe(true);
     expect(imgElement.classList.contains('lazy-image')).toBe(true);
     expect(imgElement.getAttribute('loading')).toBe('lazy');
-    expect(imgElement.getAttribute('onerror')).toBe('handleImageError(this)');
+    expect(imgElement.getAttribute('onerror')).toBe('handleImageErrorWithFallback(this)');
     expect(imgElement.getAttribute('onload')).toBe('handleOptimizedImageLoad(this)');
     expect(imgElement.getAttribute('data-fallback')).toBe(DEFAULT_FALLBACK_IMAGE);
   });
 
+  it('should use WebP when supported', () => {
+    __test_only_setWebpSupported(true);
+
+    const imgHtml = createOptimizedImage(testSrc, testWebpSrc, { alt: testAlt });
+    const imgElement = parseImgString(imgHtml);
+
+    expect(imgElement.src).toBe(testWebpSrc);
+    expect(imgElement.getAttribute('data-src')).toBe(testWebpSrc);
+    expect(imgElement.getAttribute('data-webp-src')).toBe(testWebpSrc);
+    expect(imgElement.getAttribute('data-original-src')).toBe(testSrc);
+    expect(imgElement.getAttribute('data-fallback')).toBe(testSrc);
+  });
+
+  it('should fall back to original when WebP is supported but WebP URL is invalid', () => {
+    __test_only_setWebpSupported(true);
+
+    const invalidWebpSrc = 'htp:/invalid-webp-url';
+    const imgHtml = createOptimizedImage(testSrc, invalidWebpSrc, { alt: testAlt });
+    const imgElement = parseImgString(imgHtml);
+
+    expect(imgElement.src).toBe(testSrc);
+    expect(imgElement.getAttribute('data-src')).toBe(testSrc);
+    expect(imgElement.getAttribute('data-fallback')).toBe(DEFAULT_FALLBACK_IMAGE);
+    expect(imgElement.hasAttribute('data-webp-src')).toBe(false);
+    expect(imgElement.hasAttribute('data-original-src')).toBe(false);
+  });
+
   it('should use default fallback for invalid src URL', () => {
+    __test_only_setWebpSupported(false);
+
     const invalidSrc = 'htp:/invalid-url';
-    const imgHtml = createOptimizedImage(invalidSrc, testAlt, testClass);
+    const imgHtml = createOptimizedImage(invalidSrc, null, { alt: testAlt });
     const imgElement = parseImgString(imgHtml);
 
     expect(imgElement.src).toBe(DEFAULT_FALLBACK_IMAGE);
-    expect(imgElement.getAttribute('data-src')).toBe(''); // data-src should be empty for invalid
+    expect(imgElement.getAttribute('data-src')).toBe(DEFAULT_FALLBACK_IMAGE);
     expect(imgElement.classList.contains('lazy-image')).toBe(false);
     expect(imgElement.getAttribute('data-fallback')).toBe(DEFAULT_FALLBACK_IMAGE);
   });
 
-  it('should use provided fallbackSrc when src is invalid', () => {
-    const invalidSrc = null;
-    const imgHtml = createOptimizedImage(invalidSrc, testAlt, testClass, customFallback);
-    const imgElement = parseImgString(imgHtml);
-
-    expect(imgElement.src).toBe(customFallback);
-    expect(imgElement.getAttribute('data-src')).toBe('');
-    expect(imgElement.getAttribute('data-fallback')).toBe(customFallback);
-    expect(imgElement.classList.contains('lazy-image')).toBe(false);
-  });
-
   it('should use default alt text if alt is not provided', () => {
-    const imgHtml = createOptimizedImage(testSrc, null, testClass);
+    __test_only_setWebpSupported(false);
+
+    const imgHtml = createOptimizedImage(testSrc, testWebpSrc, {});
     const imgElement = parseImgString(imgHtml);
     expect(imgElement.getAttribute('alt')).toBe('Product image');
   });
 
   it('should handle src containing \'undefined\' or \'null\' strings as invalid', () => {
+    __test_only_setWebpSupported(false);
+
     const srcWithUndefined = 'http://example.com/image_undefined.png';
-    const imgHtmlUndefined = createOptimizedImage(srcWithUndefined, testAlt, testClass);
+    const imgHtmlUndefined = createOptimizedImage(srcWithUndefined, null, { alt: testAlt });
     const imgElementUndefined = parseImgString(imgHtmlUndefined);
     expect(imgElementUndefined.src).toBe(DEFAULT_FALLBACK_IMAGE);
 
     const srcWithNull = 'http://example.com/image_null.jpg';
-    const imgHtmlNull = createOptimizedImage(srcWithNull, testAlt, testClass);
+    const imgHtmlNull = createOptimizedImage(srcWithNull, null, { alt: testAlt });
     const imgElementNull = parseImgString(imgHtmlNull);
     expect(imgElementNull.src).toBe(DEFAULT_FALLBACK_IMAGE);
   });
 
-   it('should correctly set attributes for a valid data URL', () => {
-    const dataSrc = DEFAULT_FALLBACK_IMAGE; // Using it as a valid data URL
-    const imgHtml = createOptimizedImage(dataSrc, testAlt, testClass);
+  it('should correctly set attributes for a valid data URL', () => {
+    __test_only_setWebpSupported(false);
+
+    const dataSrc = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 1x1 transparent gif
+    const imgHtml = createOptimizedImage(dataSrc, null, { alt: testAlt });
     const imgElement = parseImgString(imgHtml);
 
     expect(imgElement.src).toBe(dataSrc);
@@ -210,7 +248,7 @@ describe('initLazyLoading', () => {
   it('should set src from data-src and unobserve when an image intersects', () => {
     // Arrange: Add a mock image
     const originalSrc = 'placeholder.jpg';
-    const newSrc = 'test.jpg';
+    const newSrc = 'https://www.example.com/test.jpg';
     document.body.innerHTML = `<img class="lazy-image" data-src="${newSrc}" src="${originalSrc}">`;
     const img = document.querySelector('.lazy-image');
 

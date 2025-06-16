@@ -2,36 +2,19 @@ import { CONFIG } from './constants.js';
 
 // Stores the loaded translations
 let translations = {};
-// Stores the current language, defaults to 'zh'
-let currentLanguage = 'zh-TW';
 
-// Function to load a language file
-export async function loadLanguage(lang) {
+// Function to load the zh-TW translations
+export async function loadTranslations() {
   try {
-    const response = await fetch(`/locales/${lang}.json`);
+    const response = await fetch('/locales/zh-TW.json');
     if (response.ok) {
       translations = await response.json();
-      currentLanguage = lang;
-      console.log(`${lang.toUpperCase()} translations loaded.`);
     } else {
-      console.warn(`Failed to load ${lang}.json, falling back to previous or default.`);
+      console.warn('Failed to load zh-TW.json translations');
     }
   } catch (error) {
-    console.error(`Error loading ${lang}.json:`, error);
+    console.error('Error loading zh-TW.json:', error);
   }
-}
-
-// Function to set the current language
-export function setLanguage(lang) {
-  if (lang !== currentLanguage) {
-    return loadLanguage(lang);
-  }
-  return Promise.resolve(); // Language is already set
-}
-
-// Function to get the current language
-export function getLanguage() {
-  return currentLanguage;
 }
 
 // Translate function that takes a key (e.g., Category.Feeding or Subcategory.FEED_None)
@@ -41,7 +24,7 @@ export function translate(key) {
   for (const k of keys) {
     result = result?.[k];
     if (result === undefined) {
-      console.warn(`Translation not found for key: ${key} in ${currentLanguage}`);
+      console.warn(`Translation not found for key: ${key}`);
       return key; // Return the key itself if translation is not found
     }
   }
@@ -50,7 +33,7 @@ export function translate(key) {
 
 // Fetch configuration from API
 export async function loadConfig() {
-  console.log('Loading configuration...');
+
   try {
     const response = await fetch(CONFIG.api.endpoints.config);
     if (response.ok) {
@@ -62,7 +45,6 @@ export async function loadConfig() {
       if (config.refreshInterval) {
         CONFIG.refreshInterval = config.refreshInterval;
       }
-      console.log('Configuration loaded from API:', CONFIG);
     } else {
       console.warn('Failed to load configuration from API, using defaults');
     }

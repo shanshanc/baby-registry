@@ -5,8 +5,7 @@
     "Essential": "生活用品",
     "Gear": "嬰幼兒裝備",
     "Toy": "玩具",
-    "Mom": "媽媽用品",
-    "Donate": "直接贊助"
+    "Mom": "媽媽用品"
   },
   "Subcategory": {
     "FEED_None": "哺育用品",
@@ -27,7 +26,6 @@
     "GEAR_HomeSafety": "居家安全",
     "GEAR_Outdoor": "外出用品",
     "TOY_None": "玩具",
-    "MOM_None": "媽媽用品",
-    "DONATE_None": "直接贊助"
+    "MOM_None": "媽媽用品"
   }
 }

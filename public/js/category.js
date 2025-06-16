@@ -1,5 +1,5 @@
 import { Category, CategoryToSubcategories } from './types.js';
-import { translate, loadLanguage } from './util.js';
+import { translate, loadTranslations } from './util.js';
 
 // Builds the static HTML structure for categories and subcategories
 async function createCategoryHTMLStructure(firstCategoryShouldBeActive = false) {
@@ -117,7 +117,7 @@ function initMobileDropdown() {
 
 // Initializes the category DOM structure (headers and empty item containers)
 async function initCategories() {
-    await loadLanguage('zh-TW');
+    await loadTranslations();
     
     const categoryContainer = document.getElementById('category-container');
     const itemsContainer = document.getElementById('items-container');

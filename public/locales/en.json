@@ -5,8 +5,7 @@
     "Essential": "Essential",
     "Gear": "Gear",
     "Toy": "Toy",
-    "Mom": "Mom",
-    "Donate": "Donate"
+    "Mom": "Mom"
   },
   "Subcategory": {
     "FEED_None": "None",
@@ -27,7 +26,6 @@
     "GEAR_HomeSafety": "HomeSafety",
     "GEAR_Outdoor": "Outdoor",
     "TOY_None": "None",
-    "MOM_None": "None",
-    "DONATE_None": "None"
+    "MOM_None": "None"
   }
 }

@@ -39,7 +39,6 @@
             const debugScript = document.createElement('script');
             debugScript.src = 'js/debug.js';
             document.head.appendChild(debugScript);
-            console.log('Debug mode detected, loading debug tools');
         }
     </script>
     <!-- Defer non-critical scripts -->
@@ -65,8 +64,8 @@
 <body>
     <div class="container">
       <h1 class="title">Baby Registry</h1>
-      <h3 class="address">寄送地址: 新北市新店區碧潭和美山登山步道旁 <i class="fa-solid fa-baby-carriage"></i></h3>
-      <h3 class="bank-account">直接贊助 [銀行代號: 000] [帳號: 0800 000 0000]</h3>
+      <h3 class="address"><span class="address-label">寄送地址: </span>新北市新店區碧潭和美山登山步道旁 <i class="fa-solid fa-baby-carriage"></i></h3>
+      <h3 class="bank-account"><span class="bank-account-label">直接贊助: </span>[銀行代號: 000] [帳號: 0800 000 0000]</h3>
       <div class="registry-wrapper">
         <div class="sidebar">
           <div class="controls">

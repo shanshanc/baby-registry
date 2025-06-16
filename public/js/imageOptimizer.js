@@ -13,6 +13,34 @@ import { DEBUG_MODE } from './constants.js';
 // Default fallback image for products
 export const DEFAULT_FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' text-anchor='middle' dominant-baseline='middle' fill='%23999'%3EImage%3C/text%3E%3C/svg%3E";
 
+// Cache WebP support detection for the session
+export let webpSupported = null;
+
+/**
+ * Detect WebP support using canvas (synchronous)
+ * Cached for the session to avoid repeated detection
+ * @returns {boolean} True if WebP is supported, false otherwise
+ */
+export function supportsWebP() {
+    if (webpSupported !== null) {
+        return webpSupported;
+    }
+    
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        webpSupported = canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    } catch (e) {
+        webpSupported = false;
+        if (DEBUG_MODE) {
+            console.warn('WebP detection failed:', e);
+        }
+    }
+    
+    return webpSupported;
+}
+
 /**
  * Handles the load event for optimized images
  * This is also exposed globally for inline onload attributes
@@ -24,32 +52,112 @@ export function handleOptimizedImageLoad(img) {
 }
 
 /**
- * Creates a lazy-loaded image element with fallback support
- * @param {string} src - The image source URL
- * @param {string} alt - Alt text for the image
- * @param {string} className - CSS class for the image element
- * @param {string} fallbackSrc - Optional fallback image source
+ * Enhanced image error handler that implements the fallback chain:
+ * WebP → original image → default fallback
+ * @param {HTMLImageElement} img - The image element that failed to load
+ */
+function handleImageErrorWithFallback(img) {
+    if (DEBUG_MODE) {
+        console.log('Image failed to load:', img.src);
+    }
+    
+    // Prevent infinite loop
+    img.onerror = null;
+    
+    // Check if we have fallback URLs to try
+    const originalSrc = img.getAttribute('data-original-src');
+    const webpSrc = img.getAttribute('data-webp-src');
+    const fallbackSrc = img.getAttribute('data-fallback');
+    
+    // If we're currently showing WebP and have an original image, try that
+    if (img.src === webpSrc && originalSrc) {
+        if (DEBUG_MODE) {
+            console.log('WebP failed, trying original image:', originalSrc);
+        }
+        img.onerror = () => handleImageErrorWithFallback(img);
+        img.src = originalSrc;
+        return;
+    }
+    
+    // If we're showing original image (or direct original), use final fallback
+    if (DEBUG_MODE) {
+        console.log('Using default fallback for image');
+    }
+    img.src = fallbackSrc || DEFAULT_FALLBACK_IMAGE;
+}
+
+/**
+ * Creates a lazy-loaded image element with WebP support and fallback chain
+ * - createOptimizedImage(originalSrc, webpSrc, options)
+ * 
+ * @param {string} originalSrc - The image source URL
+ * @param {string} webpSrc - The WebP version of the image source URL
+ * @param {string} alt - Alt text for the image, default to product name
  * @returns {string} HTML string for the optimized image
  */
-export function createOptimizedImage(src, alt, className, fallbackSrc = DEFAULT_FALLBACK_IMAGE) {    
-    // Try to detect invalid URLs early and use fallback
-    const validUrl = src && (isHttpImage(src) || isDataImage(src)) && !src.includes('undefined') && !src.includes('null');
-    const finalSrc = validUrl ? src : fallbackSrc;
+export function createOptimizedImage(
+  originalSrc,
+  webpSrc,
+  options = {}
+) {    
+    const { alt } = options;
+    console.log('[TEST] webpSupported', webpSupported);
+    // Validate URLs and determine which to use
+    const originalValid = isValidImageUrl(originalSrc);
+    const webpValid = isValidImageUrl(webpSrc);
+    
+    // Choose primary source based on WebP support and URL validity
+    let primarySrc;
+    let fallbackSrc;
+    
+    if (webpSupported && webpValid) {
+        primarySrc = webpSrc;
+        fallbackSrc = originalValid ? originalSrc : DEFAULT_FALLBACK_IMAGE;
+    } else if (originalValid) {
+        primarySrc = originalSrc;
+        fallbackSrc = DEFAULT_FALLBACK_IMAGE;
+    } else {
+        // Neither URL is valid, use placeholder
+        primarySrc = DEFAULT_FALLBACK_IMAGE;
+        fallbackSrc = DEFAULT_FALLBACK_IMAGE;
+    }
+    
+    // Build data attributes for fallback chain
+    const dataAttributes = [
+        `data-src="${primarySrc}"`,
+        `data-fallback="${fallbackSrc}"`
+    ];
+    
+    // Add WebP fallback info if using WebP
+    if (webpSupported && webpValid && originalValid) {
+        dataAttributes.push(`data-webp-src="${webpSrc}"`);
+        dataAttributes.push(`data-original-src="${originalSrc}"`);
+    }
+    
+    const shouldLazyLoad = primarySrc !== DEFAULT_FALLBACK_IMAGE;
     
     return `<img 
-        src="${finalSrc}" 
-        data-src="${validUrl ? src : ''}" 
-        data-fallback="${fallbackSrc}"
+        src="${primarySrc}" 
+        ${dataAttributes.join(' ')}
         alt="${alt || 'Product image'}" 
-        class="${className} ${validUrl ? 'lazy-image' : ''}" 
+        class="item-image ${shouldLazyLoad ? 'lazy-image' : ''}" 
         loading="lazy" 
-        onerror="handleImageError(this)"
+        onerror="handleImageErrorWithFallback(this)"
         onload="handleOptimizedImageLoad(this)"
     >`;
 }
 
 /**
- * Handles image error event for lazy-loaded images
+ * Helper function to validate image URLs
+ * @param {string} src - The image source URL
+ * @returns {boolean} True if the URL is valid, false otherwise
+ */
+function isValidImageUrl(src) {
+    return src && (isHttpImage(src) || isDataImage(src)) && !src.includes('undefined') && !src.includes('null');
+}
+
+/**
+ * Handles image error event for lazy-loaded images (legacy function, kept for compatibility)
  * @param {HTMLImageElement} image - The image element that failed to load
  * @param {string} fallbackSrc - The fallback source to use
  */
@@ -82,7 +190,6 @@ export function initLazyLoading() {
                                 lazyImage.crossOrigin = "anonymous";
                             }
                         } catch (e) {
-                            // Invalid URL, will fallback
                             if (DEBUG_MODE) {
                                 console.warn('Invalid image URL:', lazyImage.dataset.src);
                             }
@@ -116,7 +223,7 @@ export function initLazyLoading() {
                         img.crossOrigin = "anonymous";
                     }
                 } catch (e) {
-                    // Invalid URL, will fallback
+                  // Invalid URL, will fallback
                 }
                 
                 // Set the actual source - onload/onerror handlers are already defined as HTML attributes
@@ -172,5 +279,37 @@ if (DEBUG_MODE && typeof window !== 'undefined' && typeof window.testImageFallba
 if (typeof window !== 'undefined') {
     window.handleOptimizedImageLoad = handleOptimizedImageLoad;
     window.handleImageError = handleImageError;
-    // testFallbacks is conditionally exposed above if DEBUG_MODE is true
+    window.handleImageErrorWithFallback = handleImageErrorWithFallback;
+    
+    // Expose testing functions in debug mode
+    if (DEBUG_MODE) {
+        window.testWebPSupport = testWebPSupport;
+    }
+}
+
+/**
+ * Test function to check WebP support - useful for debugging
+ * @returns {object} Object containing WebP support status and details
+ */
+export function testWebPSupport() {
+    const support = supportsWebP();
+    const details = {
+        supported: support,
+        cached: webpSupported !== null,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'
+    };
+    
+    if (DEBUG_MODE) {
+        console.log('WebP Support Test:', details);
+    }
+    
+    return details;
+} 
+
+/**
+ * Test-only helper to manually set the WebP support state.
+ * @param {boolean|null} value - The value to set for WebP support.
+ */
+export function __test_only_setWebpSupported(value) {
+    webpSupported = value;
 } 

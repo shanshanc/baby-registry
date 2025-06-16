@@ -143,7 +143,13 @@ const ItemManager = {
                 const imageContainer = currentImage.parentElement;
                 if (imageContainer) {
                     imageContainer.removeChild(currentImage);
-                    imageContainer.insertAdjacentHTML('afterbegin', createOptimizedImage(item.imageUrl, productName, "item-image"));
+                    imageContainer.insertAdjacentHTML('afterbegin', createOptimizedImage(
+                      item.imageUrl,
+                      item.imageUrlWebp,
+                      {
+                        alt: productName
+                      }
+                    ));
                     return true;
                 }
             }

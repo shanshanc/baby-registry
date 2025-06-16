@@ -149,16 +149,16 @@ if (isDebugMode) {
     }
   };
 
-  console.log('🛠️ Debug mode active! Available commands:');
-  console.log('- window.testImageFallbacks()');
-  console.log('- window.testImageErrorManual()');
-  console.log('- window.checkLazyImages()');
-  console.log('- window.swDebug.status()');
-  console.log('- window.swDebug.unregister()');
-  console.log('- window.swDebug.clearCaches()');
-  console.log('- window.swDebug.skipWaiting()');
-  console.log('- window.swDebug.bypassCache()');
-  console.log('- window.swDebug.showCachedResources()');
-} else {
-  console.log('Debug mode disabled. Add ?debug=true to URL to enable debug tools.');
+  // Show debug commands once when debug mode is detected
+  console.group('🛠️ Debug mode active! Available commands:');
+  console.log('%c• window.testImageFallbacks() %c- Test image fallback system', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.testImageErrorManual() %c- Manually trigger image errors', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.checkLazyImages() %c- Check lazy loading status', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.swDebug.status() %c- Service Worker status', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.swDebug.unregister() %c- Unregister Service Worker', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.swDebug.clearCaches() %c- Clear all caches', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.swDebug.skipWaiting() %c- Force SW update', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.swDebug.bypassCache() %c- Reload without cache', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.log('%c• window.swDebug.showCachedResources() %c- Show cached resources', 'color: #007acc; font-weight: bold', 'color: #666');
+  console.groupEnd();
 } 

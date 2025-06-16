@@ -7,7 +7,7 @@ import { initFilters, filterAndSearchItems, updateControlCheckboxesState } from 
 import { initCategories } from './category.js';
 import { renderItems } from './item.js';
 import ItemManager from './itemManager.js';
-import { initLazyLoading, testFallbacks } from './imageOptimizer.js';
+import { initLazyLoading, testFallbacks, supportsWebP } from './imageOptimizer.js';
 
 function toggleItems(itemEle) {
     // Toggle the selected category header
@@ -56,7 +56,9 @@ function updateUIWithItems(items) {
     
     // Log update summary
     if (updatedItems.size > 0) {
-        console.log(`Updated ${updatedItems.size} items:`, Array.from(updatedItems));
+        if (DEBUG_MODE) {
+            console.log(`Updated ${updatedItems.size} items:`, Array.from(updatedItems));
+        }
         // Re-initialize lazy loading after updating items
         initLazyLoading();
     }
@@ -288,8 +290,6 @@ function attachEventListeners() {
   const collapseAll = document.getElementById('collapse-all');
 
   expandAll.addEventListener('click', (e) => {
-      console.log('expandAll', expandAll.checked);
-      console.log('e target', e.target.checked);
       if (expandAll.checked) {
           handleExpandAllCategories();
       } else {
@@ -318,7 +318,6 @@ function attachEventListeners() {
 async function start() {
     // Wait for configuration to load
     await loadConfig();
-    
     // Initialize modal
     initModal();
 
@@ -345,11 +344,16 @@ async function start() {
         };
     }
     
+    // Detect WebP support early
+    supportsWebP();
+    
     // Then load items and render them into the initialized structure
     await loadItems();
     
     // Initial state check after items are loaded and rendered
-    console.log('Initial state update after items loaded');
+    if (DEBUG_MODE) {
+        console.log('Initialized and items loaded');
+    }
     updateControlCheckboxesState();
 }
 

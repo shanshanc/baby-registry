@@ -1,22 +1,9 @@
 import { Category, CategoryToSubcategories, ClaimText } from './types.js';
-import { DONATE_QR_FALLBACK, MESSAGES } from './constants.js';
-import { createOptimizedImage, DEFAULT_FALLBACK_IMAGE } from './imageOptimizer.js';
+import { MESSAGES } from './constants.js';
+import { createOptimizedImage } from './imageOptimizer.js';
 
 function createItemHTML(item) {
     const productName = item.product.toLowerCase().replace(/ /g, '-');
-    // Special handling for Donate category items
-    if (item.category === 'Donate') {
-        return `
-            <div class="item" data-item="${item.id}">
-                <div class="item-content donate-info" data-product="donate">
-                    <div class="donate-message">若沒有適合的禮物，也很歡迎捐贈現金，我們會用來購買其他寶寶用品。</div>
-                    <div class="image-container">
-                        ${createOptimizedImage(item.imageUrl || DONATE_QR_FALLBACK, "Donate QR Code", "donate-qr-code donate-image")}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
     
     // Regular item handling
     const statusSpan = item.takenBy ? `<span class="product-status taken">${ClaimText.TAKEN}</span>` : `<span class="product-status available">${ClaimText.AVAILABLE}</span>`;
@@ -37,7 +24,13 @@ function createItemHTML(item) {
             <div class="item-content" data-product="${productNameEn} ${productNameZH}">
                 <div class="image-container">
                     <div class="preview">
-                        ${item.imageUrl ? createOptimizedImage(item.imageUrl, productName, "item-image") : ''}
+                        ${item.imageUrl ? createOptimizedImage(
+                            item.imageUrl,
+                            item.imageUrlWebp,
+                            {
+                              alt: productName
+                            }
+                          ) : ''}
                     </div>
                 </div>
                 <div class="item-details">
