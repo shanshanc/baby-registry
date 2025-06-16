@@ -78,78 +78,49 @@ async function loadItems() {
         const cachedItems = localStorage.getItem('cachedItems');
         const cacheTimestamp = localStorage.getItem('cacheTimestamp');
         const now = Date.now();
+        
+        const isCacheFresh = cachedItems && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 60000;
         let shouldRenderFromCache = false;
         
         // Use cache if it's less than 1 minute old (reduced from 5 minutes to avoid stale data issues)
         // This helps provide an immediate render while we wait for fresh data
-        if (cachedItems && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 60000) {
+        if (isCacheFresh) {
             shouldRenderFromCache = true;
-            const items = JSON.parse(cachedItems);
+            const itemsFromCache = JSON.parse(cachedItems);
             // Only render from cache if we have items
-            if (items && items.length > 0) {
-                renderItems(items);
-                
-                // Attach claim listeners
-                items.forEach(itemData => {
-                    const itemElement = document.querySelector(`.item[data-item="${itemData.id}"]`);
-                    if (itemElement) {
-                        ItemManager.attachClaimListeners(itemElement, itemData.id);
-                    }
-                });
+            if (itemsFromCache && itemsFromCache.length > 0) {
+                // Render items into categories and attach claim listeners
+                renderItems(itemsFromCache);
+                attachClaimListeners(itemsFromCache);
                 
                 // Remove loading state since we have something to show
                 itemsContainer.dataset.loading = 'false';
                 
                 // Store initial items state for comparison
-                window.lastItemsState = JSON.stringify(items);
+                window.lastItemsState = JSON.stringify(itemsFromCache);
             }
         }
         
         // Fetch items from Durable Object - with simple fetch options
-        const url = new URL(CONFIG.api.endpoints.items);
-        // url.searchParams.append('nocache', Date.now());
-
-        // Try a simpler fetch request without problematic headers
-        const items = await fetch(url, {
-            cache: 'no-store',
-            mode: 'cors'
-        }).then(response => {
-            if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message || MESSAGES.errors.generic);
-                }).catch(e => {
-                    // If JSON parsing fails, throw a plain error
-                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
-                });
-            }
-            return response.json();
-        });
-        
-        if (DEBUG_MODE) {
-            console.log('[Debug] Total items: ', items.length);
-        }
+        const itemsFromAPI = await getItemsFromAPI();
+        const apiItemsState = JSON.stringify(itemsFromAPI);
         
         // Update cache
-        localStorage.setItem('cachedItems', JSON.stringify(items));
+        localStorage.setItem('cachedItems', apiItemsState);
         localStorage.setItem('cacheTimestamp', now.toString());
+
+        if (DEBUG_MODE) {
+            console.log('[Debug] Total items: ', itemsFromAPI.length);
+        }
         
         // Only re-render if we didn't render from cache or if the data is different
-        const newItemsState = JSON.stringify(items);
-        if (!shouldRenderFromCache || newItemsState !== window.lastItemsState) {
-            window.lastItemsState = newItemsState;
+        const shouldUpdateUI = !shouldRenderFromCache || apiItemsState !== window.lastItemsState;
+        if (shouldUpdateUI) {
+            window.lastItemsState = apiItemsState;
             
-            // Render items into the structure initialized by initCategories()
-            renderItems(items);
-            
-            // Attach claim listeners
-            items.forEach(itemData => {
-                const itemElement = document.querySelector(`.item[data-item="${itemData.id}"]`);
-                if (itemElement) {
-                    ItemManager.attachClaimListeners(itemElement, itemData.id);
-                } else {
-                    console.warn(`Item element not found for item ID ${itemData.id} after renderItems. Cannot attach claim listeners.`);
-                }
-            });
+            // Render items into categories and attach claim listeners
+            renderItems(itemsFromAPI);
+            attachClaimListeners(itemsFromAPI);
             
             // Initialize lazy loading for images
             initLazyLoading();
@@ -159,57 +130,14 @@ async function loadItems() {
         itemsContainer.dataset.loading = 'false';
         
         // Set up periodic refresh with exponential backoff
-        let retryCount = 0;
-        const maxRetryCount = 5;
-        const baseInterval = CONFIG.refreshInterval;
-        
-        const refreshItems = async () => {
-            try {
-                // Create URL with cache-busting parameter
-                const url = new URL(CONFIG.api.endpoints.items);
-                // url.searchParams.append('nocache', Date.now());
-                
-                // Simplified fetch options to avoid CORS issues
-                const response = await fetch(url.toString(), {
-                    cache: 'no-store',
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
-                }
-                
-                const updatedItems = await response.json();
-                
-                // Reset retry count on successful fetch
-                retryCount = 0;
-                
-                // Update cache
-                localStorage.setItem('cachedItems', JSON.stringify(updatedItems));
-                localStorage.setItem('cacheTimestamp', Date.now().toString());
-                
-                updateUIWithItems(updatedItems);
-            } catch (error) {
-                console.error('Error refreshing items:', error);
-                retryCount++;
-                
-                // Implement exponential backoff
-                if (retryCount < maxRetryCount) {
-                    const backoffDelay = baseInterval * Math.pow(2, retryCount);
-                    setTimeout(refreshItems, backoffDelay);
-                }
-            }
-        };
-        
-        // Start periodic refresh
-        setInterval(refreshItems, baseInterval);
+        startPeriodicRefresh();
         
     } catch (error) {
         // Remove loading state on error
         itemsContainer.dataset.loading = 'false';
         
         console.error('Error loading registry:', error);
-        let errorMessage = MESSAGES.errors.generic;
+        let errorMessage = '';
         
         // Don't try to parse error messages, just use them directly
         if (error.message) {
@@ -222,10 +150,9 @@ async function loadItems() {
         
         // Fallback if error doesn't have a message
         if (!errorMessage) {
-            errorMessage = "Unknown error occurred";
+            errorMessage = MESSAGES.errors.generic || "Unknown error occurred";
         }
         
-        // Check if itemsContainer exists before using it
         if (itemsContainer) {
             itemsContainer.innerHTML = `
                 <div class="error-message">
@@ -234,6 +161,70 @@ async function loadItems() {
             `;
         }
     }
+}
+
+async function getItemsFromAPI() {
+  const url = new URL(CONFIG.api.endpoints.items);
+
+  const items = await fetch(url, {
+      cache: 'no-store',
+      mode: 'cors'
+  }).then(response => {
+      if (!response.ok) {
+          return response.json().then(errorData => {
+              throw new Error(errorData.message || MESSAGES.errors.generic);
+          }).catch(e => {
+              throw new Error(`Server error: ${response.status} ${response.statusText}`);
+          });
+      }
+      return response.json();
+  });
+
+  return items;
+}
+
+function attachClaimListeners(items) {
+  if (items && items.length > 0) {
+    items.forEach(itemData => {
+      const itemElement = document.querySelector(`.item[data-item="${itemData.id}"]`);
+      if (itemElement) {
+        ItemManager.attachClaimListeners(itemElement, itemData.id);
+      }
+    });
+  }
+}
+
+function startPeriodicRefresh() {
+  let retryCount = 0;
+  const maxRetryCount = 5;
+  const baseInterval = CONFIG.refreshInterval;
+
+  const refreshItems = async () => {
+      try {
+          const updatedItems = await getItemsFromAPI();
+          
+          // Reset retry count on successful fetch
+          retryCount = 0;
+          
+          // Update cache
+          localStorage.setItem('cachedItems', JSON.stringify(updatedItems));
+          localStorage.setItem('cacheTimestamp', Date.now().toString());
+          
+          updateUIWithItems(updatedItems);
+      } catch (error) {
+          console.error('Error refreshing items:', error);
+          retryCount++;
+          
+          // Implement exponential backoff
+          if (retryCount < maxRetryCount) {
+              const backoffDelay = baseInterval * Math.pow(2, retryCount);
+              setTimeout(refreshItems, backoffDelay);
+          }
+      }
+  };
+
+  // Start periodic refresh
+  setInterval(refreshItems, baseInterval);
 }
 
 // Function to handle expand all categories

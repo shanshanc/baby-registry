@@ -101,7 +101,7 @@ export function createOptimizedImage(
   options = {}
 ) {    
     const { alt } = options;
-    console.log('[TEST] webpSupported', webpSupported);
+    
     // Validate URLs and determine which to use
     const originalValid = isValidImageUrl(originalSrc);
     const webpValid = isValidImageUrl(webpSrc);
