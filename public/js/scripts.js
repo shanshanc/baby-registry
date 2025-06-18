@@ -188,7 +188,7 @@ function attachClaimListeners(items) {
     items.forEach(itemData => {
       const itemElement = document.querySelector(`.item[data-item="${itemData.id}"]`);
       if (itemElement) {
-        ItemManager.attachClaimListeners(itemElement, itemData.id);
+        ItemManager.attachClaimListeners(itemElement, itemData);
       }
     });
   }
@@ -332,6 +332,26 @@ async function start() {
                 console.log('Simulated error for:', img);
             });
             return `Simulated errors for ${images.length} images`;
+        };
+
+        // Add race condition testing
+        window.testRaceCondition = function(itemId, numRequests = 3) {
+            return ItemManager.testRaceCondition(itemId, numRequests);
+        };
+
+        // Helper to get item IDs for testing
+        window.getAvailableItemIds = function() {
+            const cachedItems = localStorage.getItem('cachedItems');
+            if (cachedItems) {
+                const items = JSON.parse(cachedItems);
+                const available = items.filter(item => !item.takenBy);
+                console.log('Available items for testing:');
+                available.forEach(item => {
+                    console.log(`- ${item.id} (${item.productZH})`);
+                });
+                return available.map(item => item.id);
+            }
+            return [];
         };
     }
     

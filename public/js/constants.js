@@ -18,11 +18,7 @@ export const CONFIG = {
 // Debug mode flag - automatically true in development, false in production
 export const DEBUG_MODE = (
   window.location.hostname === 'localhost' || 
-  window.location.hostname === '127.0.0.1' || 
-  window.location.hostname.includes('.local') ||
-  window.location.hostname.includes('staging') ||
-  window.location.protocol === 'file:' ||
-  window.location.search.includes('debug=true')
+  window.location.hostname === '127.0.0.1'
 );
 
 export const MESSAGES = {
