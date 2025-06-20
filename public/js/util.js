@@ -45,11 +45,43 @@ export async function loadConfig() {
       if (config.refreshInterval) {
         CONFIG.refreshInterval = config.refreshInterval;
       }
+      
+      // Update personal information in the DOM
+      if (config.shippingAddress) {
+        const shippingElement = document.getElementById('shipping-address');
+        if (shippingElement) {
+          shippingElement.textContent = config.shippingAddress;
+        }
+      }
+      
+      if (config.bankAccount) {
+        const bankAccountElement = document.getElementById('bank-account');
+        if (bankAccountElement) {
+          bankAccountElement.textContent = config.bankAccount;
+        }
+      }
     } else {
       console.warn('Failed to load configuration from API, using defaults');
+      // Set fallback text for personal information
+      setFallbackPersonalInfo();
     }
   } catch (error) {
     console.error('Error loading configuration:', error);
+    // Set fallback text for personal information
+    setFallbackPersonalInfo();
+  }
+}
+
+// Set fallback text when configuration loading fails
+function setFallbackPersonalInfo() {
+  const shippingElement = document.getElementById('shipping-address');
+  if (shippingElement) {
+    shippingElement.textContent = '新北市新店區碧潭和美山登山步道旁';
+  }
+  
+  const bankAccountElement = document.getElementById('bank-account');
+  if (bankAccountElement) {
+    bankAccountElement.textContent = '';
   }
 }
 

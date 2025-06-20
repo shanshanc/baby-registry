@@ -44,7 +44,9 @@ export async function onRequest(context) {
       // Return configuration values from environment
       return new Response(JSON.stringify({
         itemsEndpoint: env.BASE_URL_ITEMS_DEV || env.BASE_URL_ITEMS_PROD,
-        refreshInterval: 60000
+        refreshInterval: 60000,
+        shippingAddress: env.SHIPPING_ADDRESS,
+        bankAccount: env.BANK_ACCOUNT
       }), {
         headers: {
           ...corsHeaders,
