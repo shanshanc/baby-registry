@@ -60,6 +60,13 @@ export async function loadConfig() {
           bankAccountElement.textContent = config.bankAccount;
         }
       }
+
+      if (config.recipient) {
+        const recipientElement = document.getElementById('recipient');
+        if (recipientElement) {
+          recipientElement.textContent = config.recipient;
+        }
+      }
     } else {
       console.warn('Failed to load configuration from API, using defaults');
       // Set fallback text for personal information
@@ -82,6 +89,11 @@ function setFallbackPersonalInfo() {
   const bankAccountElement = document.getElementById('bank-account');
   if (bankAccountElement) {
     bankAccountElement.textContent = '';
+  }
+
+  const recipientElement = document.getElementById('recipient');
+  if (recipientElement) {
+    recipientElement.textContent = '*** **** ****';
   }
 }
 

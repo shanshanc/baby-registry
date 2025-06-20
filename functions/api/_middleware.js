@@ -46,7 +46,8 @@ export async function onRequest(context) {
         itemsEndpoint: env.BASE_URL_ITEMS_DEV || env.BASE_URL_ITEMS_PROD,
         refreshInterval: 60000,
         shippingAddress: env.SHIPPING_ADDRESS,
-        bankAccount: env.BANK_ACCOUNT
+        bankAccount: env.BANK_ACCOUNT,
+        recipient: env.RECIPIENT
       }), {
         headers: {
           ...corsHeaders,

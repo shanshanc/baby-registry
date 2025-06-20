@@ -41,7 +41,7 @@ body {
   font-family: 'Dancing Script', cursive;
   letter-spacing: 1px;
 }
-.address, .bank-account {
+.address, .bank-account, .recipient {
   text-align: center;
   font-size: 1.2em;
   font-weight: 500;
@@ -664,7 +664,7 @@ img[src^="data:image/svg"] {
   .title {
     font-size: 3em;
   }
-  .address, .bank-account {
+  .address, .bank-account, .recipient {
     font-size: 14px;
   }
   .address-label, .bank-account-label {
