@@ -534,14 +534,24 @@ function initStickyHeader() {
     // Handle navigation clicks
     function handleNavClick(event) {
         const target = event.currentTarget.dataset.target;
-        const targetElement = document.getElementById(target);
         
-        if (targetElement) {
-            const offsetTop = targetElement.offsetTop - 20; // Account for sticky header
+        // On mobile, just scroll to top since the important info is in the hero section
+        // and the sticky header will hide anyway
+        if (window.innerWidth <= 768) {
             window.scrollTo({
-                top: offsetTop,
+                top: 0,
                 behavior: 'smooth'
             });
+        } else {
+            // Desktop: scroll to the specific element
+            const targetElement = document.getElementById(target);
+            if (targetElement) {
+                const offsetTop = targetElement.offsetTop - 20; // Account for sticky header
+                window.scrollTo({
+                    top: offsetTop,
+                    behavior: 'smooth'
+                });
+            }
         }
     }
 

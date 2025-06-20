@@ -896,6 +896,14 @@ img[src^="data:image/svg"] {
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.mobile-search-clear-btn.visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 .sticky-nav-mobile {
