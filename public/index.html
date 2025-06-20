@@ -62,6 +62,82 @@
     </script>
 </head>
 <body>
+    <!-- Sticky Header -->
+    <div id="sticky-header" class="sticky-header">
+        <!-- Desktop Version -->
+        <div class="sticky-header-desktop">
+            <div class="sticky-header-content">
+                <h2 class="sticky-title">Baby Registry</h2>
+                <nav class="sticky-nav">
+                    <button class="sticky-nav-item" data-target="bank-account" data-tooltip="點擊查看匯款資訊">
+                        <i class="fas fa-university"></i>
+                        <span>匯款資訊</span>
+                    </button>
+                    <button class="sticky-nav-item" data-target="shipping-address" data-tooltip="點擊查看寄送資訊">
+                        <i class="fas fa-shipping-fast"></i>
+                        <span>寄送資訊</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Mobile Version -->
+        <div class="sticky-header-mobile">
+            <div class="sticky-header-mobile-top">
+                <!-- Filter and Search Controls for Mobile -->
+                <div class="mobile-filter-search-controls">
+                    <div class="mobile-filter-controls">
+                        <label class="mobile-filter-label">狀態:</label>
+                        <select id="mobile-status-filter" class="mobile-filter-select">
+                            <option value="all">全部</option>
+                            <option value="available">可認領</option>
+                            <option value="taken">已認領</option>
+                        </select>
+                    </div>
+                    <div class="mobile-search-control">
+                        <div class="mobile-search-input-container">
+                            <input type="text" id="mobile-search-input" placeholder="搜尋...">
+                            <button type="button" id="mobile-search-clear-btn" class="mobile-search-clear-btn">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sticky-header-mobile-middle">
+                <!-- Category Selection for Mobile -->
+                <div class="mobile-category-controls">
+                    <label class="mobile-category-label">分類:</label>
+                    <div class="mobile-category-dropdown" id="mobile-category-dropdown">
+                        <div class="mobile-dropdown-header" id="mobile-dropdown-header">
+                            <span class="mobile-dropdown-text">所有分類</span>
+                            <i class="fas fa-chevron-down mobile-dropdown-arrow"></i>
+                        </div>
+                        <div class="mobile-dropdown-options" id="mobile-dropdown-options">
+                            <div class="mobile-dropdown-option">
+                                <label>
+                                    <input type="checkbox" id="mobile-select-all" checked>
+                                    <span>所有分類</span>
+                                </label>
+                            </div>
+                            <!-- Category options will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sticky-header-mobile-bottom">
+                <nav class="sticky-nav-mobile">
+                    <button class="sticky-nav-item-mobile" data-target="bank-account">
+                        <i class="fas fa-university"></i>
+                        <span> 匯款資訊</span>
+                    </button>
+                    <button class="sticky-nav-item-mobile" data-target="shipping-address">
+                        <i class="fas fa-shipping-fast"></i>
+                        <span> 寄送資訊</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
       <h1 class="title">Baby Registry</h1>
       <p class="">謝謝親朋好友一起分享我們的高光時刻，Baby Registry清單如下，填上名字即可認領，也可以「團購」共享😆，如覺得沒有適合或操作覺得太複雜，也歡迎直接匯款到以下育兒基金帳號，小寶寶會好好孝順大家的😂但千萬不用有壓力，開心最重要唷，再次感謝大家一同來分享生命中美好時刻！</p>

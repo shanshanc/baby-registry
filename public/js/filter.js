@@ -145,6 +145,11 @@ function filterAndSearchItems() {
     
     // Update expand/collapse state
     updateControlCheckboxesState();
+    
+    // Notify that filtering is complete (for sticky header logic)
+    if (window.stickyHeaderCheckCallback) {
+        setTimeout(window.stickyHeaderCheckCallback, 100);
+    }
 }
 
 function attachFilterListeners() {
@@ -195,4 +200,13 @@ function initFilters() {
     attachSearchListener();
 }
 
-export { initFilters, filterAndSearchItems, updateControlCheckboxesState };
+// Functions to update filter state from external sources (e.g., mobile controls)
+function updateFilterState(filterValue) {
+    currentFilter = filterValue;
+}
+
+function updateSearchState(searchValue) {
+    currentSearch = sanitizeInput(searchValue.trim());
+}
+
+export { initFilters, filterAndSearchItems, updateControlCheckboxesState, updateFilterState, updateSearchState };
