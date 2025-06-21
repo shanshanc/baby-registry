@@ -240,10 +240,24 @@ function handleExpandAllCategories() {
     document.querySelectorAll('.category-items').forEach(items => items.classList.add('active'));
     document.querySelectorAll('.category h2').forEach(h2 => h2.classList.add('active'));
     
-    // Update mobile dropdown checkboxes
-    document.querySelectorAll('.mobile-category-dropdown .dropdown-option input[type="checkbox"]').forEach(checkbox => {
+    // Update mobile dropdown checkboxes in sticky header
+    const mobileSelectAll = document.getElementById('mobile-select-all');
+    const mobileCategoryCheckboxes = document.querySelectorAll('#mobile-dropdown-options input[data-category]');
+    
+    if (mobileSelectAll) {
+        mobileSelectAll.checked = true;
+        mobileSelectAll.indeterminate = false;
+    }
+    
+    mobileCategoryCheckboxes.forEach(checkbox => {
         checkbox.checked = true;
     });
+    
+    // Update mobile dropdown display text
+    const mobileDropdownText = document.querySelector('.mobile-dropdown-text');
+    if (mobileDropdownText) {
+        mobileDropdownText.textContent = '所有分類';
+    }
 }
 
 // Function to handle collapse all categories
@@ -260,10 +274,24 @@ function handleCollapseAllCategories() {
     document.querySelectorAll('.category-items').forEach(items => items.classList.remove('active'));
     document.querySelectorAll('.category h2').forEach(h2 => h2.classList.remove('active'));
     
-    // Update mobile dropdown checkboxes
-    document.querySelectorAll('.mobile-category-dropdown .dropdown-option input[type="checkbox"]').forEach(checkbox => {
+    // Update mobile dropdown checkboxes in sticky header
+    const mobileSelectAll = document.getElementById('mobile-select-all');
+    const mobileCategoryCheckboxes = document.querySelectorAll('#mobile-dropdown-options input[data-category]');
+    
+    if (mobileSelectAll) {
+        mobileSelectAll.checked = false;
+        mobileSelectAll.indeterminate = false;
+    }
+    
+    mobileCategoryCheckboxes.forEach(checkbox => {
         checkbox.checked = false;
     });
+    
+    // Update mobile dropdown display text
+    const mobileDropdownText = document.querySelector('.mobile-dropdown-text');
+    if (mobileDropdownText) {
+        mobileDropdownText.textContent = '無選擇';
+    }
 }
 
 // New function to attach listeners to category headers for toggling
@@ -306,7 +334,22 @@ function attachEventListeners() {
   });
 }
 
-async function start() {
+// Initialize expand/collapse controls to reflect default state (all categories active)
+function initializeExpandCollapseControls() {
+    const expandAll = document.getElementById('expand-all');
+    const collapseAll = document.getElementById('collapse-all');
+    
+    if (expandAll && collapseAll) {
+        // Since all categories are active by default, expand all should be checked
+        expandAll.checked = true;
+        expandAll.indeterminate = false;
+        collapseAll.checked = false;
+        collapseAll.indeterminate = false;
+    }
+}
+
+// Call during initialization
+async function init() {
     // Wait for configuration to load
     await loadConfig();
     // Initialize modal
@@ -316,8 +359,11 @@ async function start() {
     initFilters();
 
     // Initialize category DOM structure and attach event listeners
-    await initCategories(); 
+    await initCategories();
     attachEventListeners();
+    
+    // Initialize expand/collapse controls to match default state
+    initializeExpandCollapseControls();
     
     // Expose testing functions to global scope, but only in debug mode
     if (DEBUG_MODE) {
@@ -364,14 +410,18 @@ async function start() {
     // Initial state check after items are loaded and rendered
     if (DEBUG_MODE) {
         console.log('Initialized and items loaded');
+        console.log('Category headers active:', document.querySelectorAll('.category h2.active').length);
+        console.log('Category items active:', document.querySelectorAll('.category-items.active').length);
     }
     updateControlCheckboxesState();
     
-    // Initialize sticky header
-    initStickyHeader();
+    // Initialize sticky header with a slight delay to ensure DOM is fully ready
+    setTimeout(() => {
+        initStickyHeader();
+    }, 150);
 }
 
-window.addEventListener('load', start);
+window.addEventListener('load', init);
 
 // Temporary debug function to unregister service worker
 async function unregisterServiceWorkers() {
@@ -692,8 +742,65 @@ function initStickyHeader() {
             setTimeout(handleScroll, 100);
         }
 
-        // Initial display update
-        updateMobileCategoryDisplay();
+        // Initialize dropdown with all categories checked
+        function initializeMobileDropdown() {
+            const selectAllCheckbox = document.getElementById('mobile-select-all');
+            const categoryCheckboxes = options.querySelectorAll('input[data-category]');
+            
+            // Debug: Check if categories are loaded
+            if (DEBUG_MODE) {
+                console.log('Initializing mobile dropdown...');
+                console.log('Category checkboxes found:', categoryCheckboxes.length);
+                console.log('Category headers in DOM:', document.querySelectorAll('#category-container .category h2').length);
+                console.log('Category items in DOM:', document.querySelectorAll('.category-items').length);
+            }
+            
+            // Set all categories as checked by default
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+            
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                if (DEBUG_MODE) {
+                    console.log('Setting checkbox checked for category:', checkbox.dataset.category);
+                }
+            });
+            
+            // Update display text
+            updateMobileCategoryDisplay();
+            
+            // Ensure all categories are visible (this should match the default state)
+            const categoryItems = document.querySelectorAll('.category-items');
+            const categoryHeaders = document.querySelectorAll('.category h2');
+            
+            categoryItems.forEach(items => {
+                items.classList.add('active');
+                if (DEBUG_MODE) {
+                    console.log('Setting category items active:', items.dataset.category);
+                }
+            });
+            
+            categoryHeaders.forEach(h2 => {
+                h2.classList.add('active');
+                if (DEBUG_MODE) {
+                    console.log('Setting category header active:', h2.dataset.category);
+                }
+            });
+            
+            // Update control checkboxes state
+            updateControlCheckboxesState();
+            
+            if (DEBUG_MODE) {
+                console.log('Mobile dropdown initialization complete');
+                console.log('Active category items:', document.querySelectorAll('.category-items.active').length);
+                console.log('Active category headers:', document.querySelectorAll('.category h2.active').length);
+            }
+        }
+
+        // Initial setup - use timeout to ensure DOM is ready
+        setTimeout(() => {
+            initializeMobileDropdown();
+        }, 100);
     }
 
     // Sync mobile filters with sidebar filters
