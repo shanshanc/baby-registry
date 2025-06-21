@@ -1,6 +1,6 @@
-const CACHE_NAME = 'baby-registry-v2';
-const STATIC_CACHE = 'static-v2';
-const API_CACHE = 'api-v2';
+const CACHE_NAME = 'baby-registry-v3';
+const STATIC_CACHE = 'static-v3';
+const API_CACHE = 'api-v3';
 
 // Files to cache on install
 const STATIC_ASSETS = [
