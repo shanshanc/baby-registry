@@ -70,7 +70,7 @@ body {
 }
 
 /* Adjust sidebar position when sticky header is visible */
-body.sticky-header-active .sidebar {
+.sticky-header-active .sidebar {
   top: 90px; /* Sticky header height + margin */
   max-height: calc(100vh - 110px);
 }
@@ -98,14 +98,14 @@ body.sticky-header-active .sidebar {
   padding: 10px;
   background: var(--bg-medium);
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   font-size: 1.1em;
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.categories .category h2:hover, .categories .category h2.active {
+.categories .category h2.active {
   background: var(--primary-color);
   color: white;
 }
@@ -323,15 +323,14 @@ body.sticky-header-active .sidebar {
 /* Filter and Search Controls */
 .filter-search-controls {
     margin-bottom: 12px;
-    background: var(--bg-light);
     border-radius: 8px;
 }
 
 .filter-controls {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin-bottom: 6px;
+    gap: 6px;
+    margin-bottom: 10px;
 }
 .filter-controls-radio {
   display: flex;
@@ -540,76 +539,90 @@ body.sticky-header-active .sidebar {
   }
 }
 
-/* Mobile Category Dropdown */
-.mobile-category-dropdown {
-  flex: 1;
-  position: relative;
-  max-width: none;
-  display: none; /* Hide on desktop by default */
-}
-
-.mobile-dropdown-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px;
-  border: 1px solid var(--secondary-color);
-  border-radius: 4px;
-  background: white;
-  color: var(--secondary-color);
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-}
-
-.mobile-dropdown-header:hover {
-  border-color: var(--primary-color);
-}
-
-.mobile-dropdown-text {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mobile-dropdown-arrow {
-  font-size: 12px;
-  transition: transform 0.2s ease;
-  margin-left: 8px;
-}
-
-.mobile-category-dropdown.open .mobile-dropdown-arrow {
-  transform: rotate(180deg);
-}
-
-.mobile-dropdown-options {
-  position: absolute;
-  top: 100%;
+/* Sidebar Responsive Design */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid var(--secondary-color);
-  border-top: none;
-  border-radius: 0 0 4px 4px;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 1000;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
   display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.mobile-category-dropdown.open .mobile-dropdown-options {
+.sidebar-overlay.visible {
   display: block;
+  opacity: 1;
 }
 
-.mobile-dropdown-option {
-  padding: 0;
-  border-bottom: 1px solid #f0f0f0;
+.sidebar-header {
+  display: none;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.mobile-dropdown-option:last-child {
-  border-bottom: none;
+.sidebar-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--secondary-color);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-close-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.sidebar-content {
+  /* All existing sidebar content styles remain here */
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn {
+  display: none;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 6px;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-toggle-btn i {
+  font-size: 14px;
+}
+
+/* Sticky Header Actions Layout */
+.sticky-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .mobile-dropdown-option label {
@@ -809,66 +822,45 @@ img[src^="data:image/svg"] {
 /* Mobile Sticky Header */
 .sticky-header-mobile {
   display: none;
-  flex-direction: column;
-  padding: 8px 12px;
+  padding: 12px 16px;
 }
 
-.sticky-header-mobile-top {
-  margin-bottom: 8px;
-}
-
-.sticky-header-mobile-middle {
-  margin-bottom: 8px;
-}
-
-.mobile-category-controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.mobile-category-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--secondary-color);
-  flex-shrink: 0;
-}
-
-.mobile-filter-search-controls {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.mobile-filter-controls {
+.sticky-header-mobile-content {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.mobile-filter-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--secondary-color);
-}
-
-.mobile-filter-select {
-  padding: 6px 8px;
-  border: 1px solid var(--secondary-color);
-  border-radius: 4px;
-  background: white;
-  color: var(--secondary-color);
-  font-size: 14px;
-}
-
-.mobile-search-control {
-  flex: 1;
-}
-
-.mobile-search-input-container {
-  position: relative;
+  justify-content: space-between;
   width: 100%;
+}
+
+.sticky-title-mobile {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--secondary-color);
+  flex: 1;
+  text-align: center;
+}
+
+.sticky-nav-mobile {
+  display: flex;
+  gap: 8px;
+}
+
+.sticky-nav-item-mobile {
+  background: none;
+  border: 1px solid var(--secondary-color);
+  color: var(--secondary-color);
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.sticky-nav-item-mobile:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
 
 .mobile-search-input-container input {
@@ -945,7 +937,10 @@ img[src^="data:image/svg"] {
 
 @media (max-width: 768px) {
   .title {
-    font-size: 3em;
+    display: none;
+  }
+  .greeting {
+    margin-top: 28px;
   }
   .address, .bank-account, .recipient {
     font-size: 14px;
@@ -1000,31 +995,6 @@ img[src^="data:image/svg"] {
   .claimed-badge {
     font-size: 12px;
   }
-  
-  .controls {
-    gap: 10px;
-    justify-content: center;
-  }
-
-  .controls .control-checkboxes {
-    justify-content: center;
-    margin-bottom: 8px;
-  }
-
-  .filter-controls {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .filter-controls label {
-    font-size: 0.9em;
-  }
-
-  .filter-controls-radio {
-    width: 100%;
-    justify-content: center;
-  }
 
   .modal {
     align-items: flex-start;
@@ -1033,20 +1003,6 @@ img[src^="data:image/svg"] {
 
   .skeleton-item {
     height: 250px;
-  }
-
-  .sidebar {
-    box-sizing: border-box;
-    width: 100%;
-    margin-bottom: 20px;
-  }
-
-  .categories .category h2 {
-    display: none;
-  }
-
-  .categories .category h2.active {
-    display: block;
   }
 
   .footer {
@@ -1062,13 +1018,63 @@ img[src^="data:image/svg"] {
     display: flex;
   }
   
-  /* Show mobile category dropdown on mobile devices */
-  .mobile-category-dropdown {
+  /* Show sidebar toggle button on mobile */
+  .sidebar-toggle-btn {
     display: flex;
   }
   
-  /* Hide sidebar on mobile since filters moved to sticky header */
+  /* Mobile Sidebar Behavior */
   .sidebar {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 320px;
+    max-width: 85vw;
+    background: white;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    padding: 0 0 10px 0;
+  }
+  
+  .sticky-header-active .sidebar.mobile-open {
+    left: 0;
+    top: 65px;
+  }
+  
+  .sidebar-header {
+    display: block;
+    padding: 10px 20px 6px 20px;
+  }
+  
+  .sidebar-content {
+    padding: 10px 20px;
+  }
+  
+  /* Adjust sidebar content for mobile */
+  .sidebar-content .controls {
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .sidebar-content .controls .control-checkboxes {
+    /* justify-content: center; */
+    margin-bottom: 4px;
+  }
+
+  .sidebar-content .filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .sidebar-content .filter-controls label {
+    font-size: 0.9em;
+  }
+
+  .sidebar-content .filter-controls-radio {
+    width: 100%;
+    gap: 12px;
   }
 }
