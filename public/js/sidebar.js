@@ -1,10 +1,9 @@
 // Unified Sidebar Functionality (MDN-style responsive design)
 import { DEBUG_MODE } from './constants.js';
+import stateManager from './stateManager.js';
 
-const sidebarState = {
-    isOpen: false,
-    isMobile: false
-};
+// Subscribe to sidebar state changes
+let unsubscribeSidebarState;
 
 function initSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -19,77 +18,60 @@ function initSidebar() {
 
     // Check if we're on mobile
     function updateMobileState() {
-        const wasMobile = sidebarState.isMobile;
-        sidebarState.isMobile = window.innerWidth <= 768;
+        const wasMobile = stateManager.getState('sidebar.isMobile');
+        const isMobile = window.innerWidth <= 768;
+        
+        stateManager.setState('sidebar.isMobile', isMobile);
         
         // If we switched from mobile to desktop or vice versa, reset sidebar state
-        if (wasMobile !== sidebarState.isMobile) {
-            if (!sidebarState.isMobile) {
-                // Switching to desktop - ensure sidebar is visible
-                closeSidebar();
-            } else {
-                // Switching to mobile - ensure sidebar is hidden
-                closeSidebar();
-            }
+        if (wasMobile !== isMobile) {
+            stateManager.closeSidebar();
         }
     }
 
-    // Open sidebar
-    function openSidebar() {
-        if (!sidebarState.isMobile) return; // Only for mobile
+    // Subscribe to sidebar state changes
+    unsubscribeSidebarState = stateManager.subscribe('sidebar', (sidebarState) => {
+        const { isOpen, isMobile } = sidebarState;
         
-        sidebarState.isOpen = true;
-        sidebar.classList.add('mobile-open');
-        sidebarOverlay.classList.add('visible');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        if (!isMobile) return; // Only apply mobile behavior
         
-        if (DEBUG_MODE) {
-            console.log('Sidebar opened');
-        }
-    }
-
-    // Close sidebar
-    function closeSidebar() {
-        if (!sidebarState.isMobile) return; // Only for mobile
-        
-        sidebarState.isOpen = false;
-        sidebar.classList.remove('mobile-open');
-        sidebarOverlay.classList.remove('visible');
-        document.body.style.overflow = ''; // Restore scrolling
-        
-        if (DEBUG_MODE) {
-            console.log('Sidebar closed');
-        }
-    }
-
-    // Toggle sidebar
-    function toggleSidebar() {
-        if (sidebarState.isOpen) {
-            closeSidebar();
+        if (isOpen) {
+            sidebar.classList.add('mobile-open');
+            sidebarOverlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
         } else {
-            openSidebar();
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('visible');
+            document.body.style.overflow = '';
         }
-    }
+        
+        if (DEBUG_MODE) {
+            console.log(`Sidebar ${isOpen ? 'opened' : 'closed'}`);
+        }
+    });
 
     // Event listeners
     if (sidebarToggleMobile) {
-        sidebarToggleMobile.addEventListener('click', toggleSidebar);
+        sidebarToggleMobile.addEventListener('click', () => stateManager.toggleSidebar());
     }
     
     if (sidebarClose) {
-        sidebarClose.addEventListener('click', closeSidebar);
+        sidebarClose.addEventListener('click', () => stateManager.closeSidebar());
     }
     
     if (sidebarOverlay) {
-        sidebarOverlay.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', () => stateManager.closeSidebar());
     }
 
     // Close sidebar when clicking outside on mobile
     document.addEventListener('click', (e) => {
-        if (sidebarState.isMobile && sidebarState.isOpen) {
+        const isMobile = stateManager.getState('sidebar.isMobile');
+        const isOpen = stateManager.getState('sidebar.isOpen');
+        
+        if (isMobile && isOpen) {
             if (!sidebar.contains(e.target) && 
                 !sidebarToggleMobile?.contains(e.target)) {
-                closeSidebar();
+                stateManager.closeSidebar();
             }
         }
     });
@@ -99,8 +81,8 @@ function initSidebar() {
 
     // Close sidebar on escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && sidebarState.isOpen) {
-            closeSidebar();
+        if (e.key === 'Escape' && stateManager.getState('sidebar.isOpen')) {
+            stateManager.closeSidebar();
         }
     });
 

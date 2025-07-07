@@ -1,20 +1,24 @@
-// Add filter and search state
-let currentFilter = 'all';
-let currentSearch = '';
-let searchDebounceTimer = null;
+import { sanitizeInput } from './util.js';
+import stateManager from './stateManager.js';
+
 const DEBOUNCE_DELAY = 300; // 300ms delay
 
-import { sanitizeInput } from './util.js';
+// Subscribe to filter state changes
+let unsubscribeFilters;
 
 // Debounce function to limit how often a function is called
 function debounce(func, delay) {
     return function() {
         const context = this;
         const args = arguments;
-        clearTimeout(searchDebounceTimer);
-        searchDebounceTimer = setTimeout(() => {
+        const currentTimer = stateManager.getState('filters.searchDebounceTimer');
+        clearTimeout(currentTimer);
+        
+        const newTimer = setTimeout(() => {
             func.apply(context, args);
         }, delay);
+        
+        stateManager.setState('filters.searchDebounceTimer', newTimer);
     };
 }
 
@@ -49,6 +53,9 @@ function updateControlCheckboxesState() {
 }
 
 function filterAndSearchItems() {
+    const currentFilter = stateManager.getState('filters.status');
+    const currentSearch = stateManager.getState('filters.searchTerm');
+    
     const items = document.querySelectorAll('.item');
     const categories = document.querySelectorAll('.category-items');
     
@@ -156,8 +163,7 @@ function attachFilterListeners() {
     const filterInputs = document.querySelectorAll('input[name="status-filter"]');
     filterInputs.forEach(input => {
         input.addEventListener('change', debounce((e) => {
-            currentFilter = e.target.value;
-            filterAndSearchItems();
+            stateManager.setFilter('status', e.target.value);
         }, DEBOUNCE_DELAY));
     });
 }
@@ -170,11 +176,11 @@ function attachSearchListener() {
         // Input event listener with debouncing
         searchInput.addEventListener('input', debounce((e) => {
             // Sanitize the search input
-            currentSearch = sanitizeInput(e.target.value.trim());
-            filterAndSearchItems();
+            const searchTerm = sanitizeInput(e.target.value.trim());
+            stateManager.setFilter('searchTerm', searchTerm);
             
             // Show/hide clear button based on search content
-            if (currentSearch.length > 0) {
+            if (searchTerm.length > 0) {
                 clearBtn.classList.add('visible');
             } else {
                 clearBtn.classList.remove('visible');
@@ -185,8 +191,7 @@ function attachSearchListener() {
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 searchInput.value = '';
-                currentSearch = '';
-                filterAndSearchItems();
+                stateManager.setFilter('searchTerm', '');
                 clearBtn.classList.remove('visible');
                 searchInput.focus(); // Return focus to the search input
             });
@@ -195,6 +200,11 @@ function attachSearchListener() {
 }
 
 function initFilters() {
+    // Subscribe to filter changes to trigger re-filtering
+    unsubscribeFilters = stateManager.subscribe('filters', () => {
+        filterAndSearchItems();
+    });
+    
     // Attach listeners
     attachFilterListeners();
     attachSearchListener();
@@ -202,11 +212,11 @@ function initFilters() {
 
 // Functions to update filter state from external sources (e.g., mobile controls)
 function updateFilterState(filterValue) {
-    currentFilter = filterValue;
+    stateManager.setFilter('status', filterValue);
 }
 
 function updateSearchState(searchValue) {
-    currentSearch = sanitizeInput(searchValue.trim());
+    stateManager.setFilter('searchTerm', sanitizeInput(searchValue.trim()));
 }
 
 export { initFilters, filterAndSearchItems, updateControlCheckboxesState, updateFilterState, updateSearchState };

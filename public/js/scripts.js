@@ -9,38 +9,18 @@ import { renderItems } from './item.js';
 import ItemManager from './itemManager.js';
 import { initLazyLoading, testFallbacks, supportsWebP } from './imageOptimizer.js';
 import { initSidebar, initStickyHeader } from './sidebar.js';
+import stateManager from './stateManager.js';
 
 function toggleItems(itemEle) {
     // Toggle the selected category header
     const selectedCategory = itemEle.dataset.category;
-    itemEle.classList.toggle('active');
-
-    // Toggle the selected subcategory items container
-    const subcategoryItems = document.querySelector(`.category-items[data-category="${selectedCategory}"]`);
-    if (subcategoryItems) {
-        subcategoryItems.classList.toggle('active');
-    }
-
-    // Update the master control checkboxes
-    updateControlCheckboxesState();
-}
-
-// Check if item state has changed compared to last known state
-function hasItemStateChanged(items) {
-    const currentState = JSON.stringify(items);
-    const hasChanged = currentState !== window.lastItemsState;
-    
-    if (hasChanged) {
-        window.lastItemsState = currentState;
-    }
-    
-    return hasChanged;
+    stateManager.toggleCategory(selectedCategory);
 }
 
 // Main function to update UI with new items data
 function updateUIWithItems(items) {
-    // Skip update if nothing changed
-    if (!hasItemStateChanged(items)) {
+    // Skip update if nothing changed (handled by state manager)
+    if (!stateManager.setItems(items)) {
         return;
     }
 
@@ -73,6 +53,7 @@ async function loadItems() {
     
     try {
         // Set loading state
+        stateManager.setItemsLoading(true);
         itemsContainer.dataset.loading = 'true';
         
         // Try to get cached items first
@@ -230,31 +211,12 @@ function startPeriodicRefresh() {
 
 // Function to handle expand all categories
 function handleExpandAllCategories() {
-    const collapseAll = document.getElementById('collapse-all');
-    const expandAll = document.getElementById('expand-all');
-    
-    // Update checkboxes state
-    collapseAll.checked = false;
-    collapseAll.indeterminate = false;
-    expandAll.checked = true;
-    // Expand all categories
-    document.querySelectorAll('.category-items').forEach(items => items.classList.add('active'));
-    document.querySelectorAll('.category h2').forEach(h2 => h2.classList.add('active'));
+    stateManager.expandAllCategories();
 }
 
 // Function to handle collapse all categories
 function handleCollapseAllCategories() {
-    const expandAll = document.getElementById('expand-all');
-    const collapseAll = document.getElementById('collapse-all');
-    
-    // Update checkboxes state
-    expandAll.checked = false;
-    expandAll.indeterminate = false;
-    collapseAll.checked = true;
-    
-    // Collapse all categories
-    document.querySelectorAll('.category-items').forEach(items => items.classList.remove('active'));
-    document.querySelectorAll('.category h2').forEach(h2 => h2.classList.remove('active'));
+    stateManager.collapseAllCategories();
 }
 
 // New function to attach listeners to category headers for toggling
@@ -311,10 +273,71 @@ function initializeExpandCollapseControls() {
     }
 }
 
+// Subscribe to state changes for DOM updates
+function subscribeToStateChanges() {
+    // Subscribe to category state changes
+    stateManager.subscribe('categories.expandedCategories', (expandedCategories) => {
+        // Update DOM based on expanded categories
+        document.querySelectorAll('.category-items').forEach(categoryItems => {
+            const categoryId = categoryItems.dataset.category;
+            const isExpanded = expandedCategories.has(categoryId);
+            
+            categoryItems.classList.toggle('active', isExpanded);
+            
+            const categoryHeader = document.querySelector(`.category h2[data-category="${categoryId}"]`);
+            if (categoryHeader) {
+                categoryHeader.classList.toggle('active', isExpanded);
+            }
+        });
+        
+        // Update control checkboxes
+        updateControlCheckboxesState();
+    });
+    
+    // Subscribe to category control state changes
+    stateManager.subscribe('categories.allExpanded', (allExpanded) => {
+        const expandAll = document.getElementById('expand-all');
+        if (expandAll) {
+            expandAll.checked = allExpanded;
+            expandAll.indeterminate = false;
+        }
+    });
+    
+    stateManager.subscribe('categories.allCollapsed', (allCollapsed) => {
+        const collapseAll = document.getElementById('collapse-all');
+        if (collapseAll) {
+            collapseAll.checked = allCollapsed;
+            collapseAll.indeterminate = false;
+        }
+    });
+    
+    // Set indeterminate state when neither all expanded nor all collapsed
+    stateManager.subscribe('categories', (categoryState) => {
+        const { allExpanded, allCollapsed } = categoryState;
+        const expandAll = document.getElementById('expand-all');
+        const collapseAll = document.getElementById('collapse-all');
+        
+        if (!allExpanded && !allCollapsed) {
+            if (expandAll) {
+                expandAll.indeterminate = true;
+                expandAll.checked = false;
+            }
+            if (collapseAll) {
+                collapseAll.indeterminate = true;
+                collapseAll.checked = false;
+            }
+        }
+    });
+}
+
 // Call during initialization
 async function init() {
     // Wait for configuration to load
     await loadConfig();
+    
+    // Subscribe to state changes before initializing components
+    subscribeToStateChanges();
+    
     // Initialize modal
     initModal();
 
