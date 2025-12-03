@@ -33,6 +33,397 @@ body {
   border-radius: 20px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
+
+/* Stork Animation Styles */
+.stork-animation-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  margin: 20px 0 30px 0;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, var(--bg-container) 100%);
+  border-radius: 15px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Branch */
+.branch {
+  position: absolute;
+  top: 63%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 15px;
+  background: linear-gradient(to bottom, #8B4513 0%, #654321 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.branch::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: -5px;
+  width: 40px;
+  height: 8px;
+  background: linear-gradient(to bottom, #8B4513 0%, #654321 100%);
+  border-radius: 5px;
+  transform: rotate(-25deg);
+}
+
+.branch::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: -5px;
+  width: 40px;
+  height: 8px;
+  background: linear-gradient(to bottom, #8B4513 0%, #654321 100%);
+  border-radius: 5px;
+  transform: rotate(25deg);
+}
+
+/* Stork Container */
+.stork {
+  position: absolute;
+  left: -150px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 120px;
+  height: 100px;
+  animation: flyIn 4s ease-in-out forwards;
+  z-index: 20;
+}
+
+/* Stork Body */
+.stork-body {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 50px;
+  height: 60px;
+  background: white;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Stork Head */
+.stork-head {
+  position: absolute;
+  left: 65px;
+  top: 10px;
+  width: 35px;
+  height: 35px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Stork Beak */
+.stork-beak {
+  position: absolute;
+  right: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 35px solid #FF6B35;
+  border-radius: 5px 0 0 5px;
+}
+
+/* Drop-shaped element in Beak */
+.stork-olive-branch {
+  position: absolute;
+  left: -22px;
+  top: 12px;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 24px;
+  background: linear-gradient(135deg, #E8F4F8 0%, #d8d174 50%, #97972a 100%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 20% 60%;
+  clip-path: polygon(50% 0%, 100% 85%, 100% 100%, 0% 100%, 0% 85%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.stork-olive-branch::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+}
+
+/* Stork Eye */
+.stork-eye {
+  position: absolute;
+  left: 8px;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  background: black;
+  border-radius: 50%;
+}
+
+/* Stork Wings */
+.stork-wing {
+  position: absolute;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 0 100% 100% 0 / 0 50% 50% 0;
+  transform-origin: left center;
+}
+
+.stork-wing-left {
+  left: 42px;
+  top: 45px;
+  width: 60px;
+  height: 25px;
+  transform-origin: left center;
+  transform: rotate(230deg);
+  animation: flapLeft 0.3s ease-in-out infinite;
+}
+
+.stork-wing-right {
+  left: 52px;
+  top: 45px;
+  width: 60px;
+  height: 25px;
+  transform-origin: left center;
+  transform: rotate(200deg);
+  animation: flapRight 0.3s ease-in-out infinite;
+}
+
+/* Add wing feather details */
+.stork-wing::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.05) 0%, transparent 100%);
+  border-radius: 0 100% 100% 0 / 0 50% 50% 0;
+}
+
+/* Stork Legs */
+.stork-legs {
+  position: absolute;
+  left: calc(50% - 12px);
+  bottom: -6px;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 25px;
+  transition: bottom 0.5s ease;
+}
+
+.stork.landed .stork-legs {
+  bottom: -7px;
+}
+
+.stork-leg {
+  position: absolute;
+  width: 4px;
+  background: #FF6B35;
+  border-radius: 2px;
+  transition: height 0.5s ease;
+}
+
+.stork-leg-left {
+  left: 8px;
+  height: 25px;
+  transform-origin: top center;
+}
+
+.stork-leg-right {
+  right: 8px;
+  height: 25px;
+  transform-origin: top center;
+}
+
+.stork.landed .stork-leg {
+  height: 20px;
+}
+
+/* Animations */
+@keyframes flyIn {
+  0% {
+    left: -150px;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+  }
+  50% {
+    left: calc(50% - 60px);
+    top: 30%;
+    transform: translateY(-50%) rotate(-3deg);
+  }
+  70% {
+    left: calc(50% - 60px);
+    top: 40%;
+    transform: translateY(-50%) rotate(2deg);
+  }
+  85% {
+    left: calc(50% - 60px);
+    top: 50%;
+    transform: translateY(-50%) rotate(-1deg);
+  }
+  100% {
+    left: calc(50% - 60px);
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+  }
+}
+
+@keyframes flapLeft {
+  0%, 100% {
+    transform: rotate(230deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(250deg) scaleY(0.8);
+  }
+}
+
+@keyframes flapRight {
+  0%, 100% {
+    transform: rotate(200deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(220deg) scaleY(0.8);
+  }
+}
+
+/* Stop wing flapping when landed */
+.stork.landed .stork-wing-left {
+  animation: none;
+  transform: rotate(230deg) scaleY(1);
+}
+
+.stork.landed .stork-wing-right {
+  animation: none;
+  transform: rotate(200deg) scaleY(1);
+}
+
+/* Add landed class after animation completes */
+.stork {
+  animation: flyIn 4s ease-in-out forwards;
+}
+
+.stork::after {
+  content: '';
+  animation: flyIn 4s ease-in-out forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stork-animation-container {
+    height: 300px;
+    margin: 15px 0 20px 0;
+  }
+  
+  .branch {
+    width: 200px;
+    top: 62%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .stork {
+    width: 80px;
+    height: 70px;
+  }
+  
+  /* Adjust stork position to the right on mobile */
+  @keyframes flyInMobile {
+    0% {
+      left: -150px;
+      top: 50%;
+      transform: translateY(-50%) rotate(0deg);
+    }
+    50% {
+      left: calc(50% - 30px);
+      top: 30%;
+      transform: translateY(-50%) rotate(-3deg);
+    }
+    70% {
+      left: calc(50% - 30px);
+      top: 40%;
+      transform: translateY(-50%) rotate(2deg);
+    }
+    85% {
+      left: calc(50% - 30px);
+      top: 50%;
+      transform: translateY(-50%) rotate(-1deg);
+    }
+    100% {
+      left: calc(50% - 30px);
+      top: 50%;
+      transform: translateY(-50%) rotate(0deg);
+    }
+  }
+  
+  .stork {
+    animation: flyInMobile 4s ease-in-out forwards;
+  }
+  
+  .stork-body {
+    width: 35px;
+    height: 45px;
+    left: 10px;
+    top: 15px;
+  }
+  
+  .stork-head {
+    width: 25px;
+    height: 25px;
+    left: 40px;
+    top: 5px;
+  }
+  
+  .stork-beak {
+    border-left-width: 25px;
+    border-right-width: 0;
+    right: -18px;
+    left: auto;
+  }
+  
+  .stork-olive-branch {
+    width: 12px;
+    height: 16px;
+    left: -14px;
+    top: 8px;
+  }
+  
+  .stork-olive-branch::before {
+    width: 3px;
+    height: 3px;
+    left: 3px;
+    top: 3px;
+  }
+  
+  .stork-wing-left,
+  .stork-wing-right {
+    width: 40px;
+    height: 18px;
+  }
+  
+  .stork-wing-left {
+    left: 25px;
+    top: 28px;
+    transform: rotate(230deg);
+  }
+  
+  .stork-wing-right {
+    left: 35px;
+    top: 28px;
+    transform: rotate(200deg);
+  }
+}
+
 .title {
   text-align: center;
   color: var(--primary-color);
@@ -49,46 +440,10 @@ body {
   color: var(--secondary-color);
   margin: 8px 0;
 }
-.registry-wrapper {
+.main-content {
   display: flex;
   gap: 20px;
   margin-top: 12px;
-}
-
-.sidebar {
-  width: 250px;
-  background: var(--bg-light);
-  padding: 12px;
-  border-radius: 12px;
-  position: sticky;
-  top: 20px;
-  height: fit-content;
-  max-height: calc(100vh - 40px);
-  overflow-y: overlay;
-  align-self: flex-start;
-  transition: top 0.3s ease;
-}
-
-/* Adjust sidebar position when sticky header is visible */
-.sticky-header-active .sidebar {
-  top: 90px; /* Sticky header height + margin */
-  max-height: calc(100vh - 110px);
-}
-
-/* Sidebar Controls */
-.controls .control-checkboxes {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 10px;
-}
-.controls label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-.controls input[type="checkbox"] {
-  accent-color: var(--secondary-color);
-  margin-right: 8px;
 }
 
 .categories .category h2 {
@@ -320,24 +675,23 @@ body {
   flex: 1;
 }
 
-/* Filter and Search Controls */
-.filter-search-controls {
+.filter-search-container {
     margin-bottom: 12px;
     border-radius: 8px;
 }
 
-.filter-controls {
+.filter {
     display: flex;
     flex-direction: column;
     gap: 6px;
     margin-bottom: 10px;
 }
-.filter-controls-radio {
+.filter-radio {
   display: flex;
   gap: 10px;
 }
 
-.filter-controls-radio label {
+.filter-radio label {
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -345,17 +699,23 @@ body {
     font-size: 0.95em;
 }
 
-.filter-controls-radio input[type="radio"] {
+.filter-radio input[type="radio"] {
     accent-color: var(--primary-color);
     margin-right: 8px;
 }
 
-.search-control {
+.search {
     position: relative;
     overflow: hidden;
 }
 
-.search-control input[type="text"] {
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-container input[type="text"] {
     width: 100%;
     padding: 8px 10px;
     border: 1px solid var(--bg-medium);
@@ -368,19 +728,13 @@ body {
     margin: 0;
 }
 
-.search-control input[type="text"]:focus {
+.search-input-container input[type="text"]:focus {
     outline: none;
     border-color: var(--primary-color);
 }
 
-.search-control input[type="text"]::placeholder {
+.search-input-container input[type="text"]::placeholder {
     color: #a9a9a9;
-}
-
-.search-input-container {
-    position: relative;
-    display: flex;
-    align-items: center;
 }
 
 .search-clear-btn {
@@ -539,117 +893,6 @@ body {
   }
 }
 
-/* Sidebar Responsive Design */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  display: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay.visible {
-  display: block;
-  opacity: 1;
-}
-
-.sidebar-header {
-  display: none;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
-  background: white;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.sidebar-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--secondary-color);
-}
-
-.sidebar-close-btn {
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: var(--secondary-color);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-.sidebar-close-btn:hover {
-  background-color: #f5f5f5;
-}
-
-.sidebar-content {
-  /* All existing sidebar content styles remain here */
-}
-
-/* Sidebar Toggle Button */
-.sidebar-toggle-btn {
-  display: none;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  gap: 6px;
-  align-items: center;
-  transition: background-color 0.2s ease;
-}
-
-.sidebar-toggle-btn i {
-  font-size: 14px;
-}
-
-/* Sticky Header Actions Layout */
-.sticky-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.mobile-dropdown-option label {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  cursor: pointer;
-  width: 100%;
-  box-sizing: border-box;
-  transition: background-color 0.2s ease;
-}
-
-.mobile-dropdown-option label:hover {
-  background-color: var(--bg-light);
-}
-
-.mobile-dropdown-option input[type="checkbox"] {
-  margin-right: 8px;
-  accent-color: var(--primary-color);
-}
-
-.mobile-dropdown-option span {
-  flex: 1;
-  font-size: 14px;
-  color: var(--secondary-color);
-}
-
 /* Image container and lazy loading styles */
 .image-container {
     position: relative;
@@ -705,163 +948,7 @@ img[src^="data:image/svg"] {
   opacity: 1 !important;
 }
 
-/* Sticky Header Styles */
-.sticky-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background: var(--bg-container);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transform: translateY(-100%);
-  transition: transform 0.3s ease;
-}
 
-.sticky-header.visible {
-  transform: translateY(0);
-}
-
-/* Desktop Sticky Header */
-.sticky-header-desktop {
-  display: block;
-  padding: 12px 20px;
-}
-
-.sticky-header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sticky-title {
-  font-family: 'Dancing Script', cursive;
-  font-size: 2em;
-  color: var(--primary-color);
-  margin: 0;
-  letter-spacing: 1px;
-}
-
-.sticky-nav {
-  display: flex;
-  gap: 15px;
-}
-
-.sticky-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--bg-light);
-  border: 2px solid var(--secondary-color);
-  border-radius: 8px;
-  color: var(--secondary-color);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.sticky-nav-item:hover {
-  background: var(--secondary-color);
-  color: white;
-  transform: translateY(-2px);
-}
-
-.sticky-nav-item i {
-  font-size: 16px;
-}
-
-/* Tooltip for desktop */
-.sticky-nav-item::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--secondary-color);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.3;
-  white-space: nowrap;
-  max-width: 300px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  margin-top: 8px;
-  z-index: 1001;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.sticky-nav-item::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-bottom-color: var(--secondary-color);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  margin-top: 2px;
-  z-index: 1001;
-}
-
-.sticky-nav-item:hover::after,
-.sticky-nav-item:hover::before {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Mobile Sticky Header */
-.sticky-header-mobile {
-  display: none;
-  padding: 12px 16px;
-}
-
-.sticky-header-mobile-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.sticky-title-mobile {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--secondary-color);
-  flex: 1;
-  text-align: center;
-}
-
-.sticky-nav-mobile {
-  display: flex;
-  gap: 8px;
-}
-
-.sticky-nav-item-mobile {
-  background: none;
-  border: 1px solid var(--secondary-color);
-  color: var(--secondary-color);
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s ease;
-}
-
-.sticky-nav-item-mobile:hover {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
 
 .mobile-search-input-container input {
   width: 100%;
@@ -898,46 +985,13 @@ img[src^="data:image/svg"] {
   visibility: visible;
 }
 
-.sticky-nav-mobile {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.sticky-nav-item-mobile {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  background: var(--bg-light);
-  border: 1px solid var(--secondary-color);
-  border-radius: 6px;
-  color: var(--secondary-color);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex: 1;
-  max-width: 120px;
-}
-
-.sticky-nav-item-mobile:hover {
-  background: var(--secondary-color);
-  color: white;
-}
-
-.sticky-nav-item-mobile i {
-  font-size: 18px;
-}
-
-.sticky-nav-item-mobile span {
-  font-size: 12px;
-  text-align: center;
-}
 
 @media (max-width: 768px) {
   .title {
-    display: none;
+    display: block;
+    font-size: 3em;
+    margin: 20px 0 10px 0;
+    text-align: center;
   }
   .greeting {
     margin-top: 28px;
@@ -948,7 +1002,7 @@ img[src^="data:image/svg"] {
   .address-label, .bank-account-label {
     display: none;
   }
-  .registry-wrapper {
+  .main-content {
     flex-direction: column;
     gap: 0;
   }
@@ -1007,74 +1061,5 @@ img[src^="data:image/svg"] {
 
   .footer {
     padding: 20px 0;
-  }
-  
-  /* Mobile Sticky Header */
-  .sticky-header-desktop {
-    display: none;
-  }
-  
-  .sticky-header-mobile {
-    display: flex;
-  }
-  
-  /* Show sidebar toggle button on mobile */
-  .sidebar-toggle-btn {
-    display: flex;
-  }
-  
-  /* Mobile Sidebar Behavior */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: -100%;
-    width: 320px;
-    max-width: 85vw;
-    background: white;
-    z-index: 1000;
-    transition: left 0.3s ease;
-    overflow-y: auto;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-    padding: 0 0 10px 0;
-  }
-  
-  .sticky-header-active .sidebar.mobile-open {
-    left: 0;
-    top: 65px;
-  }
-  
-  .sidebar-header {
-    display: block;
-    padding: 10px 20px 6px 20px;
-  }
-  
-  .sidebar-content {
-    padding: 10px 20px;
-  }
-  
-  /* Adjust sidebar content for mobile */
-  .sidebar-content .controls {
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-
-  .sidebar-content .controls .control-checkboxes {
-    /* justify-content: center; */
-    margin-bottom: 4px;
-  }
-
-  .sidebar-content .filter-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .sidebar-content .filter-controls label {
-    font-size: 0.9em;
-  }
-
-  .sidebar-content .filter-controls-radio {
-    width: 100%;
-    gap: 12px;
   }
 }

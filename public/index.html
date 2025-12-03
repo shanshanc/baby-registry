@@ -16,14 +16,19 @@
     <meta name="robots" content="noindex">
     <title>Baby Registry</title>
     <link rel="icon" href="img/heart.png">
+    <!-- <link rel="stylesheet" href="header.css"> -->
+    <!-- <link rel="stylesheet" href="sidebar.css"> -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap">
     <!-- Preload critical assets -->
-    <link rel="preload" href="js/constants.js" as="script" crossorigin="anonymous">
-    <link rel="preload" href="js/imageOptimizer.js" as="script" crossorigin="anonymous">
-    <link rel="preload" href="js/scripts.js" as="script" crossorigin="anonymous">
-    <link rel="preload" href="js/types.js" as="script" crossorigin="anonymous">
+    <!-- Commented out - no longer needed for stork animation page -->
+    <!-- <link rel="preload" href="js/constants.js" as="script" crossorigin="anonymous"> -->
+    <!-- <link rel="preload" href="js/imageOptimizer.js" as="script" crossorigin="anonymous"> -->
+    <!-- <link rel="preload" href="js/scripts.js" as="script" crossorigin="anonymous"> -->
+    <!-- <link rel="preload" href="js/types.js" as="script" crossorigin="anonymous"> -->
+    <!-- <link rel="preload" href="header.css" as="style"> -->
+    <!-- <link rel="preload" href="sidebar.css" as="style"> -->
     <link rel="preload" href="styles.css" as="style">
     <!-- Debug utilities - loaded based on environment -->
     <script>
@@ -42,15 +47,25 @@
         }
     </script>
     <!-- Defer non-critical scripts -->
-    <script src="js/constants.js" type="module"></script>
-    <script src="js/stateManager.js" type="module"></script>
-    <script src="js/imageOptimizer.js" type="module"></script>
-    <script src="js/sidebar.js" type="module"></script>
-    <script src="js/scripts.js" type="module" defer></script>
-    <script src="js/types.js" type="module" defer></script>
+    <!-- Commented out - no longer needed for stork animation page -->
+    <!-- <script src="js/constants.js" type="module"></script> -->
+    <!-- <script src="js/stateManager.js" type="module"></script> -->
+    <!-- <script src="js/imageOptimizer.js" type="module"></script> -->
+    <!-- <script src="js/sidebar.js" type="module"></script> -->
+    <!-- <script src="js/scripts.js" type="module" defer></script> -->
+    <!-- <script src="js/types.js" type="module" defer></script> -->
     <!-- Register service worker -->
     <script>
-        if ('serviceWorker' in navigator) {
+        // Only register service worker in production environments
+        const isDevEnvironment = 
+            window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' || 
+            window.location.hostname.includes('.local') ||
+            window.location.hostname.includes('staging') ||
+            window.location.protocol === 'file:' ||
+            window.location.search.includes('debug=true');
+
+        if ('serviceWorker' in navigator && !isDevEnvironment) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
                     .then(registration => {
@@ -60,139 +75,66 @@
                         console.log('ServiceWorker registration failed: ', err);
                     });
             });
+        } else if ('serviceWorker' in navigator) {
+            // Unregister any existing service workers in development
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (let registration of registrations) {
+                    registration.unregister();
+                    console.log('ServiceWorker unregistered for development');
+                }
+            });
         }
+    </script>
+    <!-- Stork animation initialization -->
+    <script>
+        function initStorkAnimation() {
+            const stork = document.querySelector('.stork');
+            if (stork) {
+                // Add 'landed' class after animation completes (4 seconds)
+                setTimeout(() => {
+                    stork.classList.add('landed');
+                    
+                    // Make wings flap periodically every 15 seconds after landing
+                    setInterval(() => {
+                        // Remove 'landed' class to start flapping
+                        stork.classList.remove('landed');
+                        
+                        // Flap for about 1 second, then stop again
+                        setTimeout(() => {
+                            stork.classList.add('landed');
+                        }, 1000);
+                    }, 15000); // Every 15 seconds
+                }, 4000);
+            }
+        }
+        window.addEventListener('load', initStorkAnimation);
     </script>
 </head>
 <body>
-    <!-- Sticky Header -->
-    <div id="sticky-header" class="sticky-header">
-        <!-- Desktop Version -->
-        <div class="sticky-header-desktop">
-            <div class="sticky-header-content">
-                <h2 class="sticky-title">Baby Registry</h2>
-                <nav class="sticky-nav">
-                    <button class="sticky-nav-item" data-target="bank-account" data-tooltip="點擊查看匯款資訊">
-                        <i class="fas fa-university"></i>
-                        <span>匯款資訊</span>
-                    </button>
-                    <button class="sticky-nav-item" data-target="shipping-address" data-tooltip="點擊查看寄送資訊">
-                        <i class="fas fa-shipping-fast"></i>
-                        <span>寄送資訊</span>
-                    </button>
-                </nav>
-            </div>
-        </div>
-        
-        <!-- Mobile Version -->
-        <div class="sticky-header-mobile">
-            <div class="sticky-header-mobile-content">
-                <button class="sidebar-toggle-btn" id="sidebar-toggle-mobile">
-                    <i class="fas fa-filter"></i>
-                    <span>篩選</span>
-                </button>
-                <h2 class="sticky-title-mobile">Baby Registry</h2>
-                <nav class="sticky-nav-mobile">
-                    <button class="sticky-nav-item-mobile" data-target="bank-account">
-                        <i class="fas fa-university"></i>
-                    </button>
-                    <button class="sticky-nav-item-mobile" data-target="shipping-address">
-                        <i class="fas fa-shipping-fast"></i>
-                    </button>
-                </nav>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sidebar Overlay for Mobile -->
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
+    <h1 class="title">Oliver is here!</h1>
     <div class="container">
-      <h1 class="title">Baby Registry</h1>
-      <p class="greeting">謝謝親朋好友一起分享我們的高光時刻，Baby Registry清單如下，填上名字即可認領，也可以「團購」共享😆，如覺得沒有適合或操作覺得太複雜，也歡迎直接匯款到以下育兒基金帳號，小寶寶會好好孝順大家的😂但千萬不用有壓力，開心最重要唷，再次感謝大家一同來分享生命中美好時刻！</p>
-      <h3 class="bank-account"><span class="bank-account-label"></span><span id="bank-account">載入中...</span></h3>
-      <h3 class="address"><span class="address-label">寄送地址: </span><span id="shipping-address">載入中...</span> <i class="fa-solid fa-baby-carriage"></i></h3>
-      <h3 class="recipient"><span class="recipient-label">收件人: </span><span id="recipient">載入中...</span></h3>
-      <div class="registry-wrapper">
-        <div class="sidebar" id="sidebar">
-          <div class="sidebar-header">
-            <h3 class="sidebar-title">篩選與分類</h3>
-            <button class="sidebar-close-btn" id="sidebar-close">
-              <i class="fas fa-times"></i>
-            </button>
+      <!-- Stork Animation -->
+      <div class="stork-animation-container">
+        <div class="branch"></div>
+        <div class="stork">
+          <div class="stork-body"></div>
+          <div class="stork-head">
+            <div class="stork-beak">
+              <div class="stork-olive-branch"></div>
+            </div>
+            <div class="stork-eye"></div>
           </div>
-          
-          <div class="sidebar-content">
-            <div class="controls">
-                <div class="control-checkboxes">
-                    <label>
-                        <input type="checkbox" id="expand-all"> 展開全部
-                    </label>
-                    <label>
-                        <input type="checkbox" id="collapse-all"> 收起全部
-                    </label>
-                </div>
-            </div>
-            
-            <div class="filter-search-controls">
-                <div class="filter-controls">
-                    <div class="filter-controls-label">篩選認領狀態</div>
-                    <div class="filter-controls-radio">
-                        <label>
-                            <input type="radio" name="status-filter" value="all" checked> 全部
-                        </label>
-                        <label>
-                            <input type="radio" name="status-filter" value="available"> 可認領
-                        </label>
-                        <label>
-                            <input type="radio" name="status-filter" value="taken"> 已認領
-                        </label>
-                    </div>
-                </div>
-                <div class="search-control">
-                    <div class="search-input-container">
-                        <input type="text" id="search-input" placeholder="搜尋產品...">
-                        <button type="button" id="search-clear-btn" class="search-clear-btn" aria-label="Clear search">×</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="categories" id="category-container"></div>
-          </div>
-        </div>
-        <div class="content" id="items-container" data-loading="true">
-          <div class="loading-skeleton">
-            <div class="skeleton-category">
-              <div class="skeleton-subcategory"></div>
-              <div class="skeleton-items">
-                <div class="skeleton-item"></div>
-                <div class="skeleton-item"></div>
-                <div class="skeleton-item"></div>
-              </div>
-            </div>
-            <div class="skeleton-category">
-              <div class="skeleton-subcategory"></div>
-              <div class="skeleton-items">
-                <div class="skeleton-item"></div>
-                <div class="skeleton-item"></div>
-              </div>
-            </div>
+          <div class="stork-wing stork-wing-left"></div>
+          <div class="stork-wing stork-wing-right"></div>
+          <div class="stork-legs">
+            <div class="stork-leg stork-leg-left"></div>
+            <div class="stork-leg stork-leg-right"></div>
           </div>
         </div>
       </div>
       <footer class="footer">
           <p>&copy; 2025 Daphne &amp; Hsin</p>
-          <p><a href="mailto:service@daphne-hsin-baby-registry.me">service@daphne-hsin-baby-registry.me</a></p>
       </footer>
-    </div>
-
-    <!-- Modal -->
-    <div id="claim-success-modal" class="modal">
-        <div class="modal-content">
-            <h2>感謝您的認領</h2>
-            <p>若有任何問題或需要修改，歡迎與我們聯絡</p>
-            <p class="modal-email">service@daphne-hsin-baby-registry.me</p>
-            <button id="close-modal" class="close-modal-btn">關閉</button>
-        </div>
     </div>
 </body>
 </html>
